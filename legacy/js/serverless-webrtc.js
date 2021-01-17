@@ -38,13 +38,10 @@ $('#createBtn').click(function () {
 })
 
 $('#joinBtn').click(function () {
-  navigator.getUserMedia = navigator.getUserMedia ||
-                           navigator.webkitGetUserMedia ||
-                           navigator.mozGetUserMedia ||
-                           navigator.msGetUserMedia
-  navigator.getUserMedia({video: true, audio: true}, function (stream) {
+  
+  navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function (stream) {
     var video = document.getElementById('localVideo')
-    video.src = window.URL.createObjectURL(stream)
+    video.srcObject = stream;
     video.play()
     pc2.addStream(stream)
   }, function (error) {
@@ -154,16 +151,12 @@ function setupDC1 () {
 
 function createLocalOffer () {
   console.log('video1')
-  navigator.getUserMedia = navigator.getUserMedia ||
-                           navigator.webkitGetUserMedia ||
-                           navigator.mediaDevices.getUserMedia ||
-                           navigator.msGetUserMedia
-  navigator.getUserMedia({video: true, audio: true}, function (stream) {
+  navigator.mediaDevices.getUserMedia({video: true, audio: false}).then( function (stream) {
     var video = document.getElementById('localVideo')
-    video.src = window.URL.createObjectURL(stream)
-    video.play()
-    pc1.addStream(stream)
-    console.log(stream)
+    video.srcObject = stream;
+    video.play();
+    pc1.addStream(stream);
+    console.log(stream);
     console.log('adding stream to pc1')
     setupDC1()
     pc1.createOffer(function (desc) {
@@ -178,7 +171,7 @@ function createLocalOffer () {
 }
 
 pc1.onicecandidate = function (e) {
-  console.log('ICE candidate (pc1)', e)
+  // console.log('ICE candidate (pc1)', e)
   if (e.candidate == null) {
     $('#localOffer').html(JSON.stringify(pc1.localDescription))
   }

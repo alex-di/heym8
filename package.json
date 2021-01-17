@@ -1,26 +1,22 @@
 {
-  "name": "serverless-webrtc",
-  "version": "1.0.5",
-  "description": "A terminal text chat client for webrtc datachannels between node and browsers.",
-  "author": "Chris Ball <chris@printf.net> (http://printf.net/)",
+  "name": "heymate-front",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:alex-di/serverless-webrtc.git",
+  "author": "Diakov, Aleksei <mm77707@gmail.com>",
   "license": "MIT",
-  "main": "serverless-webrtc.js",
+  "scripts": {
+    "start": "npx parcel src/index.html"
+  },
+  "devDependencies": {
+    "sass": "^1.32.4",
+    "typescript": "^4.1.3"
+  },
   "dependencies": {
-    "wrtc": "~0.0.29",
-    "ansi": "0.3.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/cjb/serverless-webrtc"
-  },
-  "keywords": [
-    "webrtc",
-    "chat"
-  ],
-  "bugs": {
-    "url": "https://github.com/cjb/serverless-webrtc/issues"
-  },
-  "bin": "./serverless-webrtc.js",
-  "preferGlobal": true,
-  "homepage": "https://github.com/cjb/serverless-webrtc"
+    "mobx": "^6.0.4",
+    "mobx-react": "^7.0.5",
+    "react": "^17.0.1",
+    "react-bootstrap": "^1.4.3",
+    "react-dom": "^17.0.1"
+  }
 }
