@@ -6,13 +6,21 @@ import Video from './video'
 
 export default observer(() => {
     const store = useStore();
-    if (!store.stream) {
-        return null;
-    }
+    console.log("!!! RENDER SCREEN", {
+        store
+    })
+
     return <div className="screen">
-        <div className="screenMain">
-            <Video id="screenVideo" stream={store.stream}></Video>
+        <div>
+        {store.ongoingCall && store.localStream && store.localStream.id && <div className="screenMain">
+            <p>Local</p>
+            <Video id="screenVideo1" stream={store.localStream}></Video>
+        </div>}
+        {store.ongoingCall && store.remoteStream && store.remoteStream.id && <div className="screenMain">
+            <p>First remote</p>
+            <Video id="screenVideo1" stream={store.remoteStream}></Video>
+        </div>}
         </div>
-        {store.remoteStreams.map((s, i) => <Video id={s.id} key={i} stream={s}></Video>}
+        {/* {store.remoteStreams.map((s, i) => (<Video id={s.id} key={i} stream={s}></Video>))} */}
     </div>
 })

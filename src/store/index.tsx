@@ -6,11 +6,11 @@ const storeContext = React.createContext<TStore | null>(null)
 
 export const StoreProvider = ({ children }) => {
   const store = useLocalStore(createStore)
-  store.init();
+//   store.init();
   return <storeContext.Provider value={store}>{children}</storeContext.Provider>
 }
 
-export const useStore = () => {
+export const useStore = (): TStore => {
   const store = React.useContext(storeContext)
   if (!store) {
     // this is especially useful in TypeScript so you don't need to be checking for null all the time

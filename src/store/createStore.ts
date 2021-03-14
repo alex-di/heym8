@@ -1,83 +1,89 @@
-export type TFriend = {
-    isHostMode: boolean
-  }
+import { observable } from 'mobx';
+import { Caller } from './caller';
+import { StoreEvent } from './storeEvent.enum';
 
-import { makeObservable, observable } from 'mobx';
-import Sdk from '../sdk'
-import Caller from './caller'
-  
+export type TStore = ReturnType<typeof createStore>
+
+export enum LocalStoreKey {
+  USERNAME = 'username'
+}
+
 export function createStore() {
-  
-  const apiUrl = 'http://192.168.0.7:3000';
-  var cfg = {
-    'iceServers': [{'url': 'stun:23.21.150.121'}],
-    
+  let username = localStorage.getItem(LocalStoreKey.USERNAME)
+  let isDefaultUsername = false;
+
+  if (!username) {
+    isDefaultUsername = true;
+    username = btoa(Date.now().toString());
   }
+  const caller = new Caller({
+    username,
+  });
+  const store = observable({
+    caller,
+    username,
 
-  const store = {
-    isHostMode: false,
-    localOffer: null,
-    steam: null,
-    room: null,
-    caller: new Caller(),
-
-    remoteStreams: observable.array([]),
-    api: new Sdk({
-      apiUrl,
-    }),
-    init() {
-      this.caller.start(this.gotLocalStream)
-      
-      this.refreshRoom();
+    isDefaultUsername,
+    messages: observable.array([]),
+    users: observable.array([]),
+    remoteStream: null,
+    localStream: null,
+    ongoingCall: false,
+    textingReady: false,
+    sendMessage(uiUsername, message) {
+      if (this.username !== uiUsername) {
+        this.setUsername(uiUsername);
+      }
+      this.caller.sendText(message);
     },
+    setUsername(newUsername) {
+      this.caller.setUsername(newUsername)
+      this.username = newUsername;
+      localStorage.setItem(LocalStoreKey.USERNAME, newUsername)
+      this.isDefaultUsername = false;
+    }
+  });
+
+  caller.on(StoreEvent.CALL_CLOSED, () => {
+    store.remoteStream = null;
+    store.ongoingCall = false;
+  })
+  caller.on(StoreEvent.CONN_OPEN, () => {
+    store.textingReady = true;
+  })
+  caller.on(StoreEvent.REMOTE_STREAM, (stream) => {
+    store.remoteStream = stream;
+    console.log({remoteStream: stream})
+    store.ongoingCall = true
+  })
+  caller.on(StoreEvent.LOCAL_STREAM, (stream) => {
+    store.localStream = stream;
+    console.log({remoteStream: stream})
+    store.ongoingCall = true
+  })
+  caller.on(StoreEvent.MESSAGE, (message: string) => {
+    console.log('Store got message')
+    store.messages.push(message)
+  })
+
+  caller.on(StoreEvent.USER_LIST, newList => {
+    const toRemove = [];
     
-    gotLocalStream(stream) {
-      this.stream = stream;
-      this.caller.call({remoteStreamCallback: this.gotRemoteStream})
-    },
+    store.users.forEach((user) => {
+      if (!~newList.indexOf(user)) {
+        toRemove.push(user)
+      } 
+    })
 
-    gotRemoteStream(stream) {
-      this.remoteStreams.push(stream);
-      console.log("REMOTE STREAMS", this.remoteStreams)
-    },
-
-    refreshRoom() {
-      const roomId = location.hash ? location.hash.replace(/^#/, '') : null
-      if (!roomId) return ;
-      this.api.getRoom(roomId).then(({room}) => {
-        this.room = room
-        const raw = atob(room.offer);
-        const offer = JSON.parse(raw)
-        var offerDesc = new RTCSessionDescription(offer)
-        console.log('Received remote offer', offerDesc)
-        // writeToChatLog('Received remote offer', 'text-success')
-        // this.connectOffer(offerDesc)
-        if (this.isHostMode) {
-          this.caller.call((stream) => this.gotRemoteStream(stream))
-        } else {
-
-        }
-      })
-
-    },
+    toRemove.forEach(user => {
+      store.users.splice(store.users.indexOf(user), 1)
+    })
     
-    createRoom() {
-      this.api.createRoom({offer: this.localOffer}).then(({room}) => {
-        location.hash = room.alias;
-        this.refreshRoom(true);
-      })
-    },
-    useHostMode(isHost: boolean) {
-      this.isHostMode = isHost;
-    },
-  }
-  return store;
+    newList.forEach(user => {
+      if (!~store.users.indexOf(user)) {
+        store.users.push(user)
+      }
+    })
+  })
+  return store
 }
-
-function encodeOffer(offer: RTCSessionDescription, password: string = "") {
-  return btoa(JSON.stringify(offer));
-}
-function decodeOffer(payload: string, password: string = ""): RTCSessionDescription {
-  return JSON.parse(atob(payload));
-}
-  export type TStore = ReturnType<typeof createStore>
