@@ -482,7 +482,7 @@ export class Caller extends EventEmitter {
       // a |notificationneeded| event, so we'll let our handler for that
       // make the offer.
       
-      private async invite(user) {
+      public async invite(user) {
         this.log("Starting to prepare an invitation");
         if (this.myPeerConnection) {
           alert("You can't start a call because you already have one open!");
@@ -491,6 +491,7 @@ export class Caller extends EventEmitter {
             alert("I'm afraid I can't let you talk to yourself. That would be weird.");
             return;
           }
+          this.targetUsername = user;
           this.log("Inviting user " + user);
       
           // Call createPeerConnection() to create the RTCPeerConnection.

@@ -41,6 +41,10 @@ export function createStore() {
       this.username = newUsername;
       localStorage.setItem(LocalStoreKey.USERNAME, newUsername)
       this.isDefaultUsername = false;
+    },
+    callUser(user) {
+      console.log("CALL USER", user)
+      this.caller.invite(user);
     }
   });
 
