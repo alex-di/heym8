@@ -26,10 +26,11 @@ export function createStore() {
     isDefaultUsername,
     messages: observable.array([]),
     users: observable.array([]),
-    remoteStream: null,
+    remoteStreams: {},
     localStream: null,
     ongoingCall: false,
     textingReady: false,
+    isUsersFull: false,
     sendMessage(uiUsername, message) {
       if (this.username !== uiUsername) {
         this.setUsername(uiUsername);
@@ -48,15 +49,15 @@ export function createStore() {
     }
   });
 
-  caller.on(StoreEvent.CALL_CLOSED, () => {
-    store.remoteStream = null;
-    store.ongoingCall = false;
+  caller.on(StoreEvent.CALL_CLOSED, (id) => {
+    store.remoteStreams[id] = null;
+    // store.ongoingCall = false;
   })
   caller.on(StoreEvent.CONN_OPEN, () => {
     store.textingReady = true;
   })
-  caller.on(StoreEvent.REMOTE_STREAM, (stream) => {
-    store.remoteStream = stream;
+  caller.on(StoreEvent.REMOTE_STREAM, ({id, stream}) => {
+    store.remoteStreams[id] = stream;
     console.log({remoteStream: stream})
     store.ongoingCall = true
   })
@@ -88,6 +89,15 @@ export function createStore() {
         store.users.push(user)
       }
     })
+
+    if (!store.isUsersFull) {
+      store.isUsersFull = true;
+      store.users.forEach((user) => {
+        if (user !== store.username) {
+          store.callUser(user);
+        }
+      })
+    }
   })
   return store
 }

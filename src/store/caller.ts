@@ -8,9 +8,9 @@ export class Caller extends EventEmitter {
     private username: string;
     
     private myUsername = null;
-    private targetUsername = null;      // To store username of other peer
-    private myPeerConnection = null;    // RTCPeerConnection
-    private transceiver = null;         // RTCRtpTransceiver
+    private peers = {};      // To store username of other peer
+    // private myPeerConnection = null;    // RTCPeerConnection
+    private transceivers = {};         // RTCRtpTransceiver
     private webcamStream = null;        // MediaStream from webcam
     
     
@@ -217,13 +217,13 @@ export class Caller extends EventEmitter {
       // use in our video call. Then we configure event handlers to get
       // needed notifications on the call.
       
-      private async createPeerConnection() {
+      private async createPeerConnection(user) {
         this.log("Setting up a connection...");
       
         // Create an RTCPeerConnection which knows to use our chosen
         // STUN server.
       
-        this.myPeerConnection = new RTCPeerConnection({
+        const connection = this.peers[user] = new RTCPeerConnection({
           iceServers: [     // Information about ICE servers - Use your own!
             {
               urls: "turn:" + this.myHostname,  // A TURN server
@@ -235,29 +235,30 @@ export class Caller extends EventEmitter {
       
         // Set up event handlers for the ICE negotiation process.
       
-        this.myPeerConnection.onicecandidate = this.handleICECandidateEvent.bind(this);
-        this.myPeerConnection.oniceconnectionstatechange = this.handleICEConnectionStateChangeEvent.bind(this);
-        this.myPeerConnection.onicegatheringstatechange = this.handleICEGatheringStateChangeEvent.bind(this);
-        this.myPeerConnection.onsignalingstatechange = this.handleSignalingStateChangeEvent.bind(this);
-        this.myPeerConnection.onnegotiationneeded = this.handleNegotiationNeededEvent.bind(this);
-        this.myPeerConnection.ontrack = this.handleTrackEvent.bind(this);
+        connection.onicecandidate = this.handleICECandidateEvent.bind(this, user);
+        connection.oniceconnectionstatechange = this.handleICEConnectionStateChangeEvent.bind(this, user);
+        connection.onicegatheringstatechange = this.handleICEGatheringStateChangeEvent.bind(this, user);
+        connection.onsignalingstatechange = this.handleSignalingStateChangeEvent.bind(this, user);
+        connection.onnegotiationneeded = this.handleNegotiationNeededEvent.bind(this, user);
+        connection.ontrack = this.handleTrackEvent.bind(this, user);
+        return connection;
       }
       
       // Called by the WebRTC layer to let us know when it's time to
       // begin, resume, or restart ICE negotiation.
       
-      private async handleNegotiationNeededEvent() {
+      private async handleNegotiationNeededEvent(user) {
         this.log("*** Negotiation needed");
       
         try {
           this.log("---> Creating offer");
-          const offer = await this.myPeerConnection.createOffer();
+          const offer = await this.peers[user].createOffer();
       
           // If the connection hasn't yet achieved the "stable" state,
           // return to the caller. Another negotiationneeded event
           // will be fired when the state stabilizes.
       
-          if (this.myPeerConnection.signalingState != "stable") {
+          if (this.peers[user].signalingState != "stable") {
             this.log("     -- The connection isn't stable yet; postponing...")
             return;
           }
@@ -266,16 +267,16 @@ export class Caller extends EventEmitter {
           // description.
       
           this.log("---> Setting local description to the offer");
-          await this.myPeerConnection.setLocalDescription(offer);
+          await this.peers[user].setLocalDescription(offer);
       
           // Send the offer to the remote peer.
       
           this.log("---> Sending the offer to the remote peer");
           this.sendToServer({
             name: this.myUsername,
-            target: this.targetUsername,
+            target: user,
             type: "video-offer",
-            sdp: this.myPeerConnection.localDescription
+            sdp: this.peers[user].localDescription
           });
         } catch(err) {
           this.log("*** The following error occurred while handling the negotiationneeded event:");
@@ -297,24 +298,25 @@ export class Caller extends EventEmitter {
       // In our case, we're just taking the first stream found and attaching
       // it to the <video> element for incoming media.
       
-      private handleTrackEvent(event) {
+      private handleTrackEvent(user, event) {
         this.log("*** Track event");
         // document.getElementById("received_video").srcObject = event.streams[0];
         // document.getElementById("hangup-button").disabled = false;
-        this.emit(StoreEvent.REMOTE_STREAM, event.streams[0])
+        this.emit(StoreEvent.REMOTE_STREAM, {id: user, stream: event.streams[0]})
       }
       
       // Handles |icecandidate| events by forwarding the specified
       // ICE candidate (created by our local ICE agent) to the other
       // peer through the signaling server.
       
-      private handleICECandidateEvent(event) {
+      private handleICECandidateEvent(user, event) {
         if (event.candidate) {
           this.log("*** Outgoing ICE candidate: " + event.candidate.candidate);
       
           this.sendToServer({
             type: "new-ice-candidate",
-            target: this.targetUsername,
+            target: user,
+            name: this.username,
             candidate: event.candidate
           });
         }
@@ -325,14 +327,14 @@ export class Caller extends EventEmitter {
       //
       // This is called when the state of the ICE agent changes.
       
-      private handleICEConnectionStateChangeEvent(event) {
-        this.log("*** ICE connection state changed to " + this.myPeerConnection.iceConnectionState);
+      private handleICEConnectionStateChangeEvent(user, event) {
+        this.log("*** ICE connection state changed to " + this.peers[user].iceConnectionState);
       
-        switch(this.myPeerConnection.iceConnectionState) {
+        switch(this.peers[user].iceConnectionState) {
           case "closed":
           case "failed":
           case "disconnected":
-            this.closeVideoCall();
+            this.closeVideoCall(user);
             break;
         }
       }
@@ -344,11 +346,11 @@ export class Caller extends EventEmitter {
       // returned in the property RTCPeerConnection.connectionState when
       // browsers catch up with the latest version of the specification!
       
-      private handleSignalingStateChangeEvent(event) {
-        this.log("*** WebRTC signaling state changed to: " + this.myPeerConnection.signalingState);
-        switch(this.myPeerConnection.signalingState) {
+      private handleSignalingStateChangeEvent(user, event) {
+        this.log("*** WebRTC signaling state changed to: " + this.peers[user].signalingState);
+        switch(this.peers[user].signalingState) {
           case "closed":
-            this.closeVideoCall();
+            this.closeVideoCall(user);
             break;
         }
       }
@@ -363,8 +365,8 @@ export class Caller extends EventEmitter {
       // We don't need to do anything when this happens, but we log it to the
       // console so you can see what's going on when playing with the sample.
       
-      private handleICEGatheringStateChangeEvent(event) {
-        this.log("*** ICE gathering state changed to: " + this.myPeerConnection.iceGatheringState);
+      private handleICEGatheringStateChangeEvent(user, event) {
+        this.log("*** ICE gathering state changed to: " + this.peers[user].iceGatheringState);
       }
       
       // Given a message containing a list of usernames, this function
@@ -400,30 +402,30 @@ export class Caller extends EventEmitter {
       // when the user hangs up, the other user hangs up, or if a connection
       // failure is detected.
       
-      private closeVideoCall() {
+      private closeVideoCall(user) {
         // var localVideo = document.getElementById("local_video");
       
         this.log("Closing the call");
         
         // Close the RTCPeerConnection
         
-        if (this.myPeerConnection) {
+        if (this.peers[user]) {
           this.log("--> Closing the peer connection");
           
           // Disconnect all our event listeners; we don't want stray events
           // to interfere with the hangup while it's ongoing.
           
-          this.myPeerConnection.ontrack = null;
-          this.myPeerConnection.onnicecandidate = null;
-          this.myPeerConnection.oniceconnectionstatechange = null;
-          this.myPeerConnection.onsignalingstatechange = null;
-          this.myPeerConnection.onicegatheringstatechange = null;
-          this.myPeerConnection.onnotificationneeded = null;
+          this.peers[user].ontrack = null;
+          this.peers[user].onnicecandidate = null;
+          this.peers[user].oniceconnectionstatechange = null;
+          this.peers[user].onsignalingstatechange = null;
+          this.peers[user].onicegatheringstatechange = null;
+          this.peers[user].onnotificationneeded = null;
           
           // Stop all transceivers on the connection
           
-          this.myPeerConnection.getTransceivers().forEach(transceiver => {
-            this.transceiver.stop();
+          this.peers[user].getTransceivers().forEach(transceiver => {
+            transceiver.stop();
           });
           
           // Stop the webcam preview as well by pausing the <video>
@@ -439,25 +441,20 @@ export class Caller extends EventEmitter {
               
               // Close the peer connection
               
-          this.myPeerConnection.close();
-          this.myPeerConnection = null;
+          this.peers[user].close();
+          this.peers[user] = null;
           this.webcamStream = null;
-          this.emit(StoreEvent.CALL_CLOSED)
+          this.emit(StoreEvent.CALL_CLOSED, user)
         }
-      
-        // Disable the hangup button
-      
-        // document.getElementById("hangup-button").disabled = true;
-        this.targetUsername = null;
       }
       
       // Handle the "hang-up" message, which is sent if the other peer
       // has hung up the call or otherwise disconnected.
       
-      private handleHangUpMsg(msg) {
+      private handleHangUpMsg({user}) {
         this.log("*** Received hang up notification from other peer");
       
-        this.closeVideoCall();
+        this.closeVideoCall(user);
       }
       
       // Hang up the call by closing our end of the connection, then
@@ -467,11 +464,13 @@ export class Caller extends EventEmitter {
       // returned to the "no call in progress" state.
       
       public hangUpCall() {
-        this.closeVideoCall();
+        Object.keys(this.peers).forEach((peer) => {
+          this.closeVideoCall(peer);
+        }) 
       
         this.sendToServer({
           name: this.myUsername,
-          target: this.targetUsername,
+          // target: this.targets[targetId],
           type: "hang-up"
         });
       }
@@ -484,23 +483,14 @@ export class Caller extends EventEmitter {
       
       public async invite(user) {
         this.log("Starting to prepare an invitation");
-        if (this.myPeerConnection) {
+        if (this.peers[user]) {
           alert("You can't start a call because you already have one open!");
         } else {
           if (user === this.myUsername) {
             alert("I'm afraid I can't let you talk to yourself. That would be weird.");
             return;
           }
-          this.targetUsername = user;
-          this.log("Inviting user " + user);
-      
-          // Call createPeerConnection() to create the RTCPeerConnection.
-          // When this returns, myPeerConnection is our RTCPeerConnection
-          // and webcamStream is a stream coming from the camera. They are
-          // not linked together in any way yet.
-      
-          this.log("Setting up connection to invite user: " + user);
-          this.createPeerConnection();
+          this.peers[user] = await this.createPeerConnection(user);
       
           // Get access to the webcam stream and attach it to the
           // "preview" box (id "local_video").
@@ -509,18 +499,19 @@ export class Caller extends EventEmitter {
             this.webcamStream = await navigator.mediaDevices.getUserMedia(this.mediaConstraints);
             this.emit(StoreEvent.LOCAL_STREAM, this.webcamStream)
           } catch(err) {
-            this.handleGetUserMediaError(err);
+            this.handleGetUserMediaError(user, err);
             return;
           }
       
           // Add the tracks from the stream to the RTCPeerConnection
       
           try {
+            console.log("ADD TRA", user, this.peers)
             this.webcamStream.getTracks().forEach(
-              this.transceiver = track => this.myPeerConnection.addTransceiver(track, {streams: [this.webcamStream]})
+              track => this.peers[user].addTransceiver(track, {streams: [this.webcamStream]})
             );
           } catch(err) {
-            this.handleGetUserMediaError(err);
+            this.handleGetUserMediaError(user, err);
           }
         }
       }
@@ -530,14 +521,14 @@ export class Caller extends EventEmitter {
       // stream, then create and send an answer to the caller.
       
       private async handleVideoOfferMsg(msg) {
-        this.targetUsername = msg.name;
+        const user = msg.name;
       
         // If we're not already connected, create an RTCPeerConnection
         // to be linked to the caller.
       
-        this.log("Received video chat offer from " + this.targetUsername);
-        if (!this.myPeerConnection) {
-          this.createPeerConnection();
+        this.log("Received video chat offer from " + user);
+        if (!this.peers[user]) {
+          await this.createPeerConnection(user);
         }
       
         // We need to set the remote description to the received SDP offer
@@ -547,19 +538,19 @@ export class Caller extends EventEmitter {
       
         // If the connection isn't stable yet, wait for it...
       
-        if (this.myPeerConnection.signalingState != "stable") {
+        if (this.peers[user].signalingState != "stable") {
           this.log("  - But the signaling state isn't stable, so triggering rollback");
       
           // Set the local and remove descriptions for rollback; don't proceed
           // until both return.
           await Promise.all([
-            this.myPeerConnection.setLocalDescription({type: "rollback"}),
-            this.myPeerConnection.setRemoteDescription(desc)
+            this.peers[user].setLocalDescription({type: "rollback"}),
+            this.peers[user].setRemoteDescription(desc)
           ]);
           return;
         } else {
           this.log ("  - Setting remote description");
-          await this.myPeerConnection.setRemoteDescription(desc);
+          await this.peers[user].setRemoteDescription(desc);
         }
       
         // Get the webcam stream if we don't already have it
@@ -568,7 +559,7 @@ export class Caller extends EventEmitter {
           try {
             this.webcamStream = await navigator.mediaDevices.getUserMedia(this.mediaConstraints);
           } catch(err) {
-            this.handleGetUserMediaError(err);
+            this.handleGetUserMediaError(user, err);
             return;
           }
       
@@ -578,22 +569,22 @@ export class Caller extends EventEmitter {
       
           try {
             this.webcamStream.getTracks().forEach(
-              this.transceiver = track => this.myPeerConnection.addTransceiver(track, {streams: [this.webcamStream]})
+              track => this.peers[user].addTransceiver(track, {streams: [this.webcamStream]})
             );
           } catch(err) {
-            this.handleGetUserMediaError(err);
+            this.handleGetUserMediaError(user, err);
           }
         }
       
         this.log("---> Creating and sending answer to caller");
       
-        await this.myPeerConnection.setLocalDescription(await this.myPeerConnection.createAnswer());
+        await this.peers[user].setLocalDescription(await this.peers[user].createAnswer());
       
         this.sendToServer({
           name: this.myUsername,
-          target: this.targetUsername,
+          target: user,
           type: "video-answer",
-          sdp: this.myPeerConnection.localDescription
+          sdp: this.peers[user].localDescription
         });
       }
       
@@ -607,7 +598,7 @@ export class Caller extends EventEmitter {
         // in our "video-answer" message.
       
         var desc = new RTCSessionDescription(msg.sdp);
-        await this.myPeerConnection.setRemoteDescription(desc).catch((e) => this.reportError(e));
+        await this.peers[msg.name].setRemoteDescription(desc).catch((e) => this.reportError(e));
       }
       
       // A new ICE candidate has been received from the other peer. Call
@@ -619,7 +610,7 @@ export class Caller extends EventEmitter {
       
         this.log("*** Adding received ICE candidate: " + JSON.stringify(candidate));
         try {
-          await this.myPeerConnection.addIceCandidate(candidate)
+          await this.peers[msg.name].addIceCandidate(candidate)
         } catch(err) {
           this.reportError(err);
         }
@@ -632,7 +623,7 @@ export class Caller extends EventEmitter {
       // they simply opted not to share their media, that's not really an
       // error, so we won't present a message in that situation.
       
-      private handleGetUserMediaError(e) {
+      private handleGetUserMediaError(user, e) {
         this.log_error(e);
         switch(e.name) {
           case "NotFoundError":
@@ -651,7 +642,7 @@ export class Caller extends EventEmitter {
         // Make sure we shut down our end of the RTCPeerConnection so we're
         // ready to try again.
       
-        this.closeVideoCall();
+        this.closeVideoCall(user);
       }
       
       // Handles reporting errors. Currently, we just dump stuff to console but
