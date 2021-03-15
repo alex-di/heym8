@@ -31,7 +31,12 @@
 
 .streamWrapper {
     position: relative;
-    height: 100%;
+    
+    max-height: 100%;
+    &.local {
+        
+        height: 100%;
+    }
 
     .remoteInfo {
         position: absolute;
@@ -48,6 +53,7 @@
 .videoItem {
     max-height: 100%;
     max-width: 100%;
+    object-fit: cover;
 
     position: absolute;
     z-index: 0;
@@ -65,19 +71,35 @@
 
 .remoteStreamsContainer {
     height: 100%;
+    .streamWrapper {
+        flex-basis: 500px!important;
+    }
 }
 
 .bottomPanel {
-    min-height: 200px;
+    // min-height: 200px;
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
     .lsWrapper {
         min-width: 150px;
+        min-height: 150px;
     }
     & > .row {
         height: 100%;
         position: relative;
+    }
+}
+
+.sendFormWrapper {
+    position: relative;
+    .messagesWrapper {
+        z-index: 2;
+        min-width: 250px;
+        position: absolute;
+        bottom: 100%;
+        padding-bottom: 5px;
+        left: 0;
     }
 }

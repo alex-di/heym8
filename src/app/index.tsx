@@ -13,7 +13,7 @@ const App = () => {
         <StoreProvider >
             <div className="d-flex flex-column">
                 <Row className="flex-fill">
-                    <Col>
+                    <Col className="p-0">
                         <RemoteDashboard></RemoteDashboard>
                     </Col>
                 </Row>
