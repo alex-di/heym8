@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import { Caller } from './caller';
-import { StoreEvent } from './storeEvent.enum';
+import { MessageType, StoreEvent } from './enums';
 
 export type TStore = ReturnType<typeof createStore>
 
@@ -31,6 +31,15 @@ export function createStore() {
     ongoingCall: false,
     textingReady: false,
     isUsersFull: false,
+    systemMessage(data) {
+
+      var time = new Date();
+      var timeStr = time.toLocaleTimeString();
+      this.messages.push(JSON.stringify({
+        ...data,
+        time: timeStr,
+      }))
+    },
     sendMessage(uiUsername, message) {
       if (this.username !== uiUsername) {
         this.setUsername(uiUsername);
@@ -69,6 +78,9 @@ export function createStore() {
   caller.on(StoreEvent.MESSAGE, (message: string) => {
     console.log('Store got message')
     store.messages.push(message)
+    // setTimeout(() => {
+    //   store.messages.shift()
+    // }, 15000)
   })
 
   caller.on(StoreEvent.USER_LIST, newList => {
@@ -82,11 +94,13 @@ export function createStore() {
 
     toRemove.forEach(user => {
       store.users.splice(store.users.indexOf(user), 1)
+      store.systemMessage({type: MessageType.USER_LEFT, name: user})
     })
     
     newList.forEach(user => {
-      if (!~store.users.indexOf(user)) {
+      if (user !== store.username && !~store.users.indexOf(user)) {
         store.users.push(user)
+        store.systemMessage({type: MessageType.USER_JOINED, name: user})
       }
     })
 

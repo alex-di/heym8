@@ -1,5 +1,5 @@
 import {EventEmitter} from 'events';
-import { StoreEvent } from './storeEvent.enum';
+import { MessageType, StoreEvent } from './enums';
 
 export class Caller extends EventEmitter {
     private connection = null;
@@ -9,8 +9,6 @@ export class Caller extends EventEmitter {
     
     private myUsername = null;
     private peers = {};      // To store username of other peer
-    // private myPeerConnection = null;    // RTCPeerConnection
-    private transceivers = {};         // RTCRtpTransceiver
     private webcamStream = null;        // MediaStream from webcam
     
     
@@ -98,10 +96,14 @@ export class Caller extends EventEmitter {
         // If this is an HTTPS connection, we have to use a secure WebSocket
         // connection too, so add another "s" to the scheme.
       
+        var port = '';
         if (document.location.protocol === "https:") {
           scheme += "s";
+        } else {
+          
+          port += ':6503'
         }
-        serverUrl = scheme + "://" + this.myHostname + ":6503";
+        serverUrl = scheme + "://" + this.myHostname + port + "/ws";
       
         this.log(`Connecting to server: ${serverUrl}`);
         this.connection = new WebSocket(serverUrl, "json");
@@ -155,17 +157,16 @@ export class Caller extends EventEmitter {
               break;
               
             case "username":
-              text = "<b>User <em>" + msg.name + "</em> signed in at " + timeStr + "</b><br>";
+              text = JSON.stringify({ type: MessageType.USER_JOINED, time: timeStr, name: msg.name})
               break;
       
             case "message":
-              text = "(" + timeStr + ") <b>" + msg.name + "</b>: " + msg.text + "<br>";
+              text = JSON.stringify({ type: MessageType.USER_MESSAGE, time: timeStr, name: msg.name, text: msg.text })
               break;
       
             case "rejectusername":
               this.myUsername = msg.name;
-              text = "<b>Your username has been set to <em>" + this.myUsername +
-                "</em> because the name you chose is in use.</b><br>";
+              text = JSON.stringify({ type: MessageType.REJECT_USERNAME, time: timeStr, name: msg.name})
               break;
       
       

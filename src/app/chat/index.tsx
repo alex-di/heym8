@@ -5,8 +5,8 @@ import Messages from './messages';
 import SendForm from './sendForm';
 
 export default () => {
-    return <div>
-        <Row>
+    return <div className="d-flex flex-column">
+        <Row className="flex-fill mb-2">
             <Col>
                 <Messages></Messages>
             </Col>

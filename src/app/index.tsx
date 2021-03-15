@@ -17,14 +17,17 @@ const App = () => {
                         <RemoteDashboard></RemoteDashboard>
                     </Col>
                 </Row>
-                <Row className="bottomPanel">
-                    <Col xs={3}>
+                <div  className="bottomPanel d-flex">
+
+                <div className="p-2 flex-grow-1">
+
+                <Chat></Chat>
+                </div>
+                    <div className="lsWrapper flex-grow-0">
+
                         <LocalStream></LocalStream>
-                    </Col>
-                    <Col>
-                        <Chat></Chat>
-                    </Col>
-                </Row>
+                    </div>
+                </div>
 
             </div>
         </StoreProvider>
