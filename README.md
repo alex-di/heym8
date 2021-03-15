@@ -1,5 +1,6 @@
 # HeyM8 Video chat application
-I hope structure is self-explanatory
+Pre-dapp video chat project using webrtc 
+and simple websocket signaling server
 
 ## Stack
 - react
@@ -7,13 +8,12 @@ I hope structure is self-explanatory
 - parcel to build front
 
 ## Plan
-### Phase 1 
+### Phase 1 - In progress
 Ordinary WebRTC chat. Features needed:
 - rooms
 - file transfering
 - material design
 - mute 
-- file transfer
 - text chat implementation ising p2p data transfer
 
 ### Phase 2 
@@ -21,3 +21,4 @@ Ordinary WebRTC chat. Features needed:
 
 ### Phase 3 
  Go to dApp
+- Auth using metamask or/and dot plugin
