@@ -611,6 +611,9 @@ export class Caller extends EventEmitter {
       
         this.log("*** Adding received ICE candidate: " + JSON.stringify(candidate));
         try {
+          if (!this.peers[msg.name]) {
+            return this.log('ICE CANDIDATE HAS NO PEER FOR USER ' + msg.name)
+          }
           await this.peers[msg.name].addIceCandidate(candidate)
         } catch(err) {
           this.reportError(err);
