@@ -12,7 +12,6 @@ and simple websocket signaling server
 Ordinary WebRTC chat. Features needed:
 - rooms
 - file transfering
-- material design
 - mute 
 - text chat implementation ising p2p data transfer
 
