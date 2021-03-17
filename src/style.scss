@@ -1,9 +1,11 @@
+$secondaryColor: #aaa;
+
 #root {
     width: 100%;
     height: 100%;
     position: absolute;
     display: flex;
-    background: #aaa;
+    background: $secondaryColor;
 }
 
 .flex-column {
@@ -45,7 +47,7 @@
         // left: 0;
         margin: 3px;
         font-weight: bold;
-        text-shadow: 1px 1px #aaa;
+        text-shadow: 1px 1px $secondaryColor;
         z-index: 1;
     }
 }
@@ -85,6 +87,31 @@
     .lsWrapper {
         min-width: 150px;
         min-height: 150px;
+
+        .settingsWrapper {
+            position: absolute;
+            height: 100%;
+            right: 100%;
+            top: 0;
+        }
+        .settingsButtonWrapper {
+            position: relative;
+            z-index: 1;
+            .settingsButton {
+
+                opacity: 0;
+                transition: .3 opacity .3;
+                &:hover, &.active {
+                    opacity: 1;
+                }
+                svg {
+                    width: 150px;
+                    height: 150px;
+                    padding: 25px;
+                    fill: $secondaryColor;
+                }
+            }
+        }
     }
     & > .row {
         height: 100%;

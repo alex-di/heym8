@@ -31,6 +31,7 @@ export function createStore() {
     ongoingCall: false,
     textingReady: false,
     isUsersFull: false,
+    muted: false,
     systemMessage(data) {
 
       var time = new Date();
@@ -55,6 +56,10 @@ export function createStore() {
     callUser(user) {
       console.log("CALL USER", user)
       this.caller.invite(user);
+    },
+    setMute(value = true) {
+      this.muted = value;
+      value ? this.caller.muteLocalStream() : this.caller.unmuteLocalStream()
     }
   });
 
