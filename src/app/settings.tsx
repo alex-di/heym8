@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import Mute from 'react-bootstrap-icons/dist/icons/mic-mute'
-import MuteOn from 'react-bootstrap-icons/dist/icons/mic-mute-fill'
+import Mute from 'react-bootstrap-icons/dist/icons/mic-mute.js'
+import MuteOn from 'react-bootstrap-icons/dist/icons/mic-mute-fill.js'
 
 import {useStore} from '../store'
 
