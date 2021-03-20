@@ -17,6 +17,8 @@ export default () => {
   <p>To connect with your friends just share this link and wait for them <br/>to enjoy private chatting limited only by your connection capabilities.</p>
   
     <ClipboardText></ClipboardText>
+    <p></p>
+    <p></p>
   <p>
     Messages and streams are transferred directly between peers using super secure WebRTC technology.
   </p>
@@ -26,8 +28,6 @@ export default () => {
   <p>
     <Button variant="primary" href="https://github.com/alex-di/heym8" target="_blank">Learn more</Button>
   </p>
-    <p></p>
-    <p></p>
     <p></p>
   <h3 className="text-right"><i>Cheers, Alex Di.</i></h3>
   <p></p>
