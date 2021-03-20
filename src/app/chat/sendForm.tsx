@@ -13,7 +13,7 @@ export default observer(() => {
     const [message, updateMessage] = useState('');
     const [showUsernameInput, toggleUNInput] = useState(store.isDefaultUsername);
     const [username, updateUsername] = useState(store.username);
-    return <div className="sendFormWrapper">
+    return store.ongoingCall && <div className="sendFormWrapper">
                 <div className="messagesWrapper">
                     <Messages></Messages>
                     </div>

@@ -21,7 +21,7 @@ export default () => {
   <p>
     <Button variant="primary" href="https://github.com/alex-di/heym8" target="_blank">Learn more</Button>
   </p>
-  <p>To connect with your friends just share this link</p>
+  <p>To connect with your friends just share this link and stay on this page</p>
   
     <ClipboardText></ClipboardText>
   
