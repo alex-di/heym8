@@ -10,7 +10,7 @@ export default () => {
             
   <h1>Hey mate!</h1>
   <p>
-    This is the lightweight app that allows you to connect to your "mate" without a middleman. <br/>
+    This is the lightweight app that allows you to have a video chat with your "mate" without a middleman.<br/>
     It stores nothing on the server and has no tracking or analytics.
   </p>
   <p>
@@ -29,6 +29,7 @@ export default () => {
     <p></p>
     <p></p>
   <h3 className="text-right"><i>Cheers, Alex Di.</i></h3>
+  <p><i>P.S: I'd recomment using Chrome for this</i></p>
     </div>
 
 </Jumbotron>

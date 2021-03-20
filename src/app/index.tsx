@@ -7,9 +7,11 @@ import RemoteDashboard from './remoteDashboard'
 import LocalStream from './localStream';
 import Chat from './chat';
 import { StoreProvider } from '../store';
+import {StarrySky} from './skyBackground';
 
 const App = () => {
     return <Container fluid>
+            <StarrySky>
         <StoreProvider >
             <div className="d-flex flex-column">
                 <Row className="flex-fill">
@@ -30,7 +32,7 @@ const App = () => {
                 </div>
 
             </div>
-        </StoreProvider>
+        </StoreProvider></StarrySky>
     </Container>
 } 
 
