@@ -10,6 +10,5 @@ export default observer(() => {
     return store.ongoingCall && store.localStream && store.localStream.id && <div className="streamWrapper local">
         <div className="settingsButtonWrapper" ><Settings></Settings></div>
         <Video id="localStream" muted stream={store.localStream}></Video>
-    </div>
-    
+    </div>   
 })

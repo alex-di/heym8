@@ -6,6 +6,7 @@ export class Caller extends EventEmitter {
     private clientID = 0;
     private myHostname: string;
     private username: string;
+    private roomId: string;
     
     private myUsername = null;
     private peers = {};      // To store username of other peer
@@ -33,7 +34,7 @@ export class Caller extends EventEmitter {
     };
     
   
-      constructor({ username }) {
+      constructor({ username, roomId }) {
         super();
           // Get our hostname
   
@@ -42,6 +43,7 @@ export class Caller extends EventEmitter {
             myHostname = "localhost";
           }
   
+          this.roomId = roomId;
           this.myHostname = myHostname;
           this.username = username;
           this.log("Hostname: " + myHostname);
@@ -79,7 +81,10 @@ export class Caller extends EventEmitter {
   
   
       private sendToServer(msg) {
-        var msgJSON = JSON.stringify(msg);
+        var msgJSON = JSON.stringify({
+          ...msg,
+          roomId: this.roomId
+        });
   
         this.log("Sending '" + msg.type + "' message: " + msgJSON);
         this.connection.send(msgJSON);

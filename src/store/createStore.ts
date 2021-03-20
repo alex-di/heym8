@@ -12,16 +12,22 @@ export function createStore() {
   let username = localStorage.getItem(LocalStoreKey.USERNAME)
   let isDefaultUsername = false;
 
+  if (!location.hash) {
+    location.hash = btoa(Math.random().toString().substr(-5)).replace(/=/g, '')
+  }
+
   if (!username) {
     isDefaultUsername = true;
     username = btoa(Date.now().toString());
   }
   const caller = new Caller({
     username,
+    roomId: location.hash,
   });
   const store = observable({
     caller,
     username,
+    roomId: location.hash,
 
     isDefaultUsername,
     messages: observable.array([]),
