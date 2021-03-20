@@ -60,7 +60,7 @@ export function createStore() {
       this.isDefaultUsername = false;
     },
     callUser(user) {
-      console.log("CALL USER", user)
+      // console.log("CALL USER", user)
       this.caller.invite(user);
     },
     setMute(value = true) {
@@ -78,16 +78,16 @@ export function createStore() {
   })
   caller.on(StoreEvent.REMOTE_STREAM, ({id, stream}) => {
     store.remoteStreams[id] = stream;
-    console.log({remoteStream: stream})
+    // console.log({remoteStream: stream})
     store.ongoingCall = true
   })
   caller.on(StoreEvent.LOCAL_STREAM, (stream) => {
     store.localStream = stream;
-    console.log({remoteStream: stream})
+    // console.log({remoteStream: stream})
     store.ongoingCall = true
   })
   caller.on(StoreEvent.MESSAGE, (message: string) => {
-    console.log('Store got message')
+    // console.log('Store got message')
     store.messages.push(message)
     // setTimeout(() => {
     //   store.messages.shift()

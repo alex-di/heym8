@@ -6,8 +6,6 @@ export function renderMessage(raw: string) {
     try {
         const {type, name, text, time} = JSON.parse(raw);
         const key = `${type}:${time}:${name}`;
-
-        console.log("NEW MESSAGE", {type, name, text})
         switch (type) {
             case MessageType.USER_JOINED:
                 return <SystemMessage key={key} time={time}>{name} just joined. Say hello.</SystemMessage>

@@ -11,5 +11,4 @@ export default observer(() => {
     return <div className={`settingsButton  ${store.muted ? 'active' : ''}`} onClick={() => store.setMute(!store.muted)}>
         {store.muted ? <MuteOn></MuteOn> : <Mute></Mute> }
     </div>
-    
 })

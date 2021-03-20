@@ -36,9 +36,9 @@ export default class CopyLink extends React.Component {
         const {copyText} = this.state
         return <Form>
             <InputGroup size="lg" className=" mr-sm-2">
-                <Form.Control value={location.href}></Form.Control>
+                <Form.Control onChange={() => {}} value={location.href}></Form.Control>
                 <InputGroup.Append>
-                    <Button ref={(el => this.button = el)}class="" data-clipboard-text={location.href} disabled={copyText}>{copyText ? BUTTON_TEXT_COPIED : BUTTON_TEXT_DEFAULT}</Button>
+                    <Button ref={(el => this.button = el)} data-clipboard-text={location.href} disabled={copyText}>{copyText ? BUTTON_TEXT_COPIED : BUTTON_TEXT_DEFAULT}</Button>
                 </InputGroup.Append>
             </InputGroup>
         </Form>

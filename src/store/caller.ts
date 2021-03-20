@@ -791,7 +791,6 @@ export class Caller extends EventEmitter {
           // Add the tracks from the stream to the RTCPeerConnection
       
           try {
-            console.log("ADD TRA", user, this.peers)
             this.webcamStream.getTracks().forEach(
               track => this.peers[user].addTransceiver(track, {streams: [this.webcamStream]})
             );
