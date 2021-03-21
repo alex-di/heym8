@@ -48,6 +48,8 @@ export class Caller extends EventEmitter {
           this.username = username;
           this.log("Hostname: " + myHostname);
           this.connect();
+          this.muteLocalStream = this.muteLocalStream.bind(this);
+          this.unmuteLocalStream = this.unmuteLocalStream.bind(this);
       }
   
       // Called when the "id" message is received; this message is sent by the
