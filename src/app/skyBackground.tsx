@@ -62,7 +62,7 @@ export class StarrySky extends React.Component {
     render() {
       const { num } = this.state;
       return (
-        <div id="App">
+        <>
           <svg id="sky">
             {[...Array(num)].map((x, y) => (
               <circle
@@ -90,7 +90,7 @@ export class StarrySky extends React.Component {
             ))}
           </div>
           {this.props.children}
-        </div>
+        </>
       );
     }
   }
