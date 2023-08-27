@@ -31,7 +31,7 @@ export default () => {
     <p></p>
   <h3 className="text-right"><i>Cheers, Alex Di.</i></h3>
   <p></p>
-  <p><i>P.S: I'd recomment using Chrome for this</i></p>
+  <p><i>P.S: I'd recommend using Chrome for this</i></p>
     </div>
 
 </Jumbotron>
