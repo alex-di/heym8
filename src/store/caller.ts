@@ -169,11 +169,16 @@ export class Caller extends EventEmitter {
             case "username":
               text = JSON.stringify({ type: MessageType.USER_JOINED, time: timeStr, name: msg.name})
               break;
-      
+    
             case "message":
               text = JSON.stringify({ type: MessageType.USER_MESSAGE, time: timeStr, name: msg.name, text: msg.text })
               break;
-      
+  
+            case "note":
+              // text = JSON.stringify({ type: MessageType.NOTE, time: timeStr, name: msg.name, text: msg.text })
+              this.emit(StoreEvent.NOTE, JSON.parse(msg.text))
+              break;
+    
             case "rejectusername":
               this.myUsername = msg.name;
               text = JSON.stringify({ type: MessageType.REJECT_USERNAME, time: timeStr, name: msg.name})
@@ -205,6 +210,16 @@ export class Caller extends EventEmitter {
         var msg = {
           text,
           type: "message",
+          id: this.clientID,
+          date: Date.now()
+        };
+        this.sendToServer(msg);
+      }
+
+      public sendNote(note, octave) {
+        var msg = {
+          text: JSON.stringify({ note, octave }),
+          type: "note",
           id: this.clientID,
           date: Date.now()
         };

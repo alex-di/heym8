@@ -5,11 +5,13 @@ export enum StoreEvent {
   USER_LIST = 'onUserListUpdated',
   CALL_CLOSED = 'onCallClosed',
   LOCAL_STREAM = 'onLocalStream',
+  NOTE = 'note',
 }
 
 export enum MessageType {
   USER_MESSAGE = 'user_message',
   USER_JOINED = 'user_joined',
   USER_LEFT = 'user_left',
-  REJECT_USERNAME = 'reject_username'
+  REJECT_USERNAME = 'reject_username',
+  NOTE = 'note',
 }

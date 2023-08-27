@@ -1,6 +1,7 @@
 import { observable } from 'mobx';
 import { Caller } from './caller';
 import { MessageType, StoreEvent } from './enums';
+import { createKeyboard } from './keyboard';
 
 export type TStore = ReturnType<typeof createStore>
 
@@ -24,6 +25,13 @@ export function createStore() {
     username,
     roomId: location.hash,
   });
+
+
+  const keyboard = createKeyboard({
+    onNote: (note, octave) => {
+      caller.sendNote(note, octave);
+    }
+  })
   const store = observable({
     caller,
     username,
@@ -38,8 +46,15 @@ export function createStore() {
     textingReady: false,
     isUsersFull: false,
     muted: false,
-    systemMessage(data) {
+    music: false,
+    enableKeyboard() {
+      keyboard.enable()
+    },
+    disableKeyboard() {
+      keyboard.disable()
+    },
 
+    systemMessage(data) {
       var time = new Date();
       var timeStr = time.toLocaleTimeString();
       this.messages.push(JSON.stringify({
@@ -66,6 +81,10 @@ export function createStore() {
     setMute(value = true) {
       this.muted = value;
       value ? this.caller.muteLocalStream() : this.caller.unmuteLocalStream()
+    },
+    setMusic(value = true) {
+      this.music = value;
+      // value ? this.caller.muteLocalStream() : this.caller.unmuteLocalStream()
     }
   });
 
@@ -89,6 +108,13 @@ export function createStore() {
   caller.on(StoreEvent.MESSAGE, (message: string) => {
     // console.log('Store got message')
     store.messages.push(message)
+    // setTimeout(() => {
+    //   store.messages.shift()
+    // }, 15000)
+  })
+  caller.on(StoreEvent.NOTE, (note) => {
+
+    keyboard.playNote(note.note, note.octave)
     // setTimeout(() => {
     //   store.messages.shift()
     // }, 15000)

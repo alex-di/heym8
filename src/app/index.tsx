@@ -8,11 +8,13 @@ import LocalStream from './localStream';
 import Chat from './chat';
 import { StoreProvider } from '../store';
 import {StarrySky} from './skyBackground';
+import Keyboard from './keyboard';
 
 const App = () => {
     return <Container fluid>
-            <StarrySky>
+        <StarrySky>
         <StoreProvider >
+            <Keyboard />
             <div className="d-flex flex-column">
                 <Row className="flex-fill">
                     <Col className="p-0">
