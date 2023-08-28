@@ -2,10 +2,8 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import Mute from 'react-bootstrap-icons/dist/icons/mic-mute.js'
 import MuteOn from 'react-bootstrap-icons/dist/icons/mic-mute-fill.js'
-import Music from 'react-bootstrap-icons/dist/icons/file-earmark.js'
-import MusicOn from 'react-bootstrap-icons/dist/icons/file-earmark-fill.js'
-import Settings from 'react-bootstrap-icons/dist/icons/gear-wide-connected.js'
-import SettingsOn from 'react-bootstrap-icons/dist/icons/gear-wide.js'
+import Music from 'react-bootstrap-icons/dist/icons/music-note.js'
+import MusicOn from 'react-bootstrap-icons/dist/icons/music-note-list.js'
 
 import {useStore} from '../store'
 

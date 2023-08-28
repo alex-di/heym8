@@ -1,4 +1,4 @@
-$primaryColor: #ff9f4d ;// linear-gradient(to right, #47cbff 0%, #4dff6b 50%, #ff9f4d 100%);
+$primaryColor: #e1700d ;// linear-gradient(to right, #47cbff 0%, #4dff6b 50%, #ff9f4d 100%);
 $secondaryColor: #aaa;
 
 #root {
@@ -105,12 +105,19 @@ $secondaryColor: #aaa;
             position: relative;
             z-index: 1;
 
+            display: flex;
+
             &:hover {
                 opacity: 1;
                 .settingsButton {
                     opacity: 1!important;
                 }
             }
+
+            flex:auto;
+            justify-content: space-around;
+            width: 100%;
+            height: 100%;
 
             .settingsButton {
 
@@ -120,10 +127,11 @@ $secondaryColor: #aaa;
                     opacity: .5;
                 }
                 svg {
-                    width: 50px;
-                    height: 50px;
-                    padding: 15px;
+                    width: 60px;
+                    height: 60px;
+                    padding: 10px;
                     fill: $primaryColor;
+                    filter: drop-shadow(1px 1px 2px rgb(0 0 0 / 0.3));
                 }
             }
         }
