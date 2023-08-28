@@ -12,8 +12,8 @@ export default observer(() => {
             store.enableKeyboard()
         }
         return () => {
-            // store.disableKeyboard()
+            store.disableKeyboard()
         }
     })
-    return store.music ? <div id="keyboard" className="keyboard-holder"></div> : null
+    return store.music ? <div className="keyboard-wrap"><div id="keyboard" className="keyboard-holder"></div></div> : null
 })

@@ -214,7 +214,7 @@ function createKeyboard({ onNote }){
 
 	// Generates audio for pressed note and returns that to be played
 	var fnPlayNote = function(note, octave) {
-		const src = __audioSynth.generate(selectSound.value, note, octave, 2);
+		const src = __audioSynth.generate(selectSound.value, note, octave, 4);
 		let container = new Audio(src);
 		container.addEventListener('ended', function() { container = null; });
 		// @ts-ignore play exists on media controls
@@ -223,7 +223,6 @@ function createKeyboard({ onNote }){
 		container.setAttribute('type', 'audio/wav');
 		container.load();
 		return container;
-	
 	};
 	
 	return {
@@ -245,12 +244,12 @@ function createKeyboard({ onNote }){
 						if(n.length>1) { //adding sharp sign makes 2 characters
 							thisKey.className = 'black key'; //2 classes
 							thisKey.style.width = '30px';
-							thisKey.style.height = '120px';
+							thisKey.style.height = '80px';
 							thisKey.style.left = (40 * (iWhite - 1)) + 25 + 'px';
 						} else {
 							thisKey.className = 'white key';
 							thisKey.style.width = '40px';
-							thisKey.style.height = '200px';
+							thisKey.style.height = '120px';
 							thisKey.style.left = 40 * iWhite + 'px';
 							iWhite++;
 						}
@@ -260,7 +259,7 @@ function createKeyboard({ onNote }){
 		
 						let s = getDispStr(n,i,reverseLookupText);
 		
-						label.innerHTML = '<b class="keyLabel">' + s + '</b>' + '<br /><br />' + n.substr(0,1) +
+						label.innerHTML = '<b class="keyLabel">' + s + '</b>' + '<br />' + n.substr(0,1) +
 							'<span name="OCTAVE_LABEL" value="' + i + '">' + (__octave + Number(i)) + '</span>' + (n.substr(1,1)?n.substr(1,1):'');
 						thisKey.appendChild(label);
 						thisKey.setAttribute('ID', 'KEY_' + n + ',' + i);
@@ -307,7 +306,6 @@ function createKeyboard({ onNote }){
 			}
 			// Remove key bindings once note is done.
 			var fnRemoveKeyBinding = function(e) {
-				console.log({ keysPressed})
 				var i = keysPressed.length;
 				while(i--) {
 					if(keysPressed[i]==e.keyCode) {
@@ -348,11 +346,22 @@ function createKeyboard({ onNote }){
 			
 			window.addEventListener('keydown', fnPlayKeyboard);
 			window.addEventListener('keyup', fnRemoveKeyBinding);
+			window.addEventListener(evtListener[1], mouseUpBinding);
+
+			function mouseUpBinding() { 
+				let n = keysPressed.length; 
+				while(n--) { 
+					fnRemoveKeyBinding({keyCode:keysPressed[n]}); 
+				}
+			}
+	
 
 
 			disable = () => {
 				window.removeEventListener('keydown', fnPlayKeyboard);
 				window.removeEventListener('keyup', fnRemoveKeyBinding);
+				window.removeEventListener(evtListener[1], mouseUpBinding);
+				
 			}
 
 		},

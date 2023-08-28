@@ -1,3 +1,4 @@
+$primaryColor: #ff9f4d ;// linear-gradient(to right, #47cbff 0%, #4dff6b 50%, #ff9f4d 100%);
 $secondaryColor: #aaa;
 
 #root {
@@ -103,18 +104,26 @@ $secondaryColor: #aaa;
         .settingsButtonWrapper {
             position: relative;
             z-index: 1;
+
+            &:hover {
+                opacity: 1;
+                .settingsButton {
+                    opacity: 1!important;
+                }
+            }
+
             .settingsButton {
 
                 opacity: 0;
-                transition: .3 opacity .3;
-                &:hover, &.active {
-                    opacity: 1;
+                transition: .5 all .5;
+                 &.active {
+                    opacity: .5;
                 }
                 svg {
-                    width: 150px;
-                    height: 150px;
-                    padding: 25px;
-                    fill: $secondaryColor;
+                    width: 50px;
+                    height: 50px;
+                    padding: 15px;
+                    fill: $primaryColor;
                 }
             }
         }
@@ -190,14 +199,16 @@ $secondaryColor: #aaa;
 		-webkit-transition: margin 0.05s ease, background-color 0.05s ease, box-shadow 0.05s ease; }
 	.key:hover { background-color: #71DB90; }
 		
-	.key .label { position: absolute; bottom: 15px; text-align: center; left: 0px; right: 0px; }
+	.key .label { position: absolute; bottom: 0px; text-align: center; left: 0px; right: 0px; }
 
-	.keyLabel {font-weight: 900; text-shadow: 0px -1px 5px #EBF508; font-size: 15px;}
+	.keyLabel {font-weight: 900; text-shadow: 0px -1px 5px #EBF508; font-size: 12px;}
 
 	.black { background-color: rgb(32,32,32); color: #ffffff; z-index: 1; text-shadow: 0px -1px 1px #FF0000; }
 	
 	.white { background-color: #F2F2DE; color: #3008F5; z-index: 0; text-shadow: 0px 1px 1px #08E8F5; }
 	
-	.keyboard-holder { margin: 30px auto; height: 200px; position:relative; user-select:none; -webkit-user-select:none;-moz-user-select:none;-o-user-select:none; }
+	.keyboard-holder { margin: 0 auto; height: 100%; position:relative; user-select:none; -webkit-user-select:none;-moz-user-select:none;-o-user-select:none; }
 
+    .keyboard-wrap {z-index: 10; width: 100%; height: 200px; position: fixed; top: 0;}
 	/*.playing {background-color: #1BC0EA;}*/
+
