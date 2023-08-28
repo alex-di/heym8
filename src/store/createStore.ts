@@ -32,6 +32,31 @@ export function createStore() {
       caller.sendNote(note, octave);
     }
   })
+
+
+  function checkRoom() {
+    let nextCheck = 15000
+
+    const streams = Object.keys(store.remoteStreams)
+
+    const stream = store.remoteStreams[streams[0]]
+    console.log('users', store.users, streams, stream, store.users.length < streams.length)
+
+    // if (store.users.length < streams.length) {
+    //   const user = store.users.find((user) => user !== store.username);
+
+    //   if (user) {
+
+    //     const stream = store.remoteStreams[user];
+    //     console.log('reinvite', user,  stream)
+    //     caller.reinvite(user);
+    //   }
+    // }
+
+
+    setTimeout(checkRoom, nextCheck) 
+  }
+
   const store = observable({
     caller,
     username,
@@ -76,7 +101,10 @@ export function createStore() {
     },
     callUser(user) {
       // console.log("CALL USER", user)
-      this.caller.invite(user);
+      setTimeout(() => {
+        this.caller.invite(user);
+
+      }, 100)
     },
     setMute(value = true) {
       this.muted = value;
@@ -94,10 +122,11 @@ export function createStore() {
   })
   caller.on(StoreEvent.CONN_OPEN, () => {
     store.textingReady = true;
+    setTimeout(checkRoom, 5000)
   })
   caller.on(StoreEvent.REMOTE_STREAM, ({id, stream}) => {
     store.remoteStreams[id] = stream;
-    // console.log({remoteStream: stream})
+    console.log({id, remoteStream: stream})
     store.ongoingCall = true
   })
   caller.on(StoreEvent.LOCAL_STREAM, (stream) => {
@@ -119,6 +148,14 @@ export function createStore() {
     //   store.messages.shift()
     // }, 15000)
   })
+  caller.on(StoreEvent.RECONNECT, (user) => {
+    console.log("GOT RECONNECT")
+    caller.reinvite(user)
+    // keyboard.playNote(note.note, note.octave)
+    // setTimeout(() => {
+    //   store.messages.shift()
+    // }, 15000)
+  })
 
   caller.on(StoreEvent.USER_LIST, newList => {
     const toRemove = [];
@@ -132,6 +169,7 @@ export function createStore() {
     toRemove.forEach(user => {
       store.users.splice(store.users.indexOf(user), 1)
       store.systemMessage({type: MessageType.USER_LEFT, name: user})
+      store.caller.closeVideoCall(user)
     })
     
     newList.forEach(user => {
@@ -145,7 +183,10 @@ export function createStore() {
       store.isUsersFull = true;
       store.users.forEach((user) => {
         if (user !== store.username) {
-          store.callUser(user);
+
+          setTimeout(() => {
+            store.callUser(user);
+          }, 500)
         }
       })
     }

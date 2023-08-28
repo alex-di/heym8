@@ -6,6 +6,7 @@ export enum StoreEvent {
   CALL_CLOSED = 'onCallClosed',
   LOCAL_STREAM = 'onLocalStream',
   NOTE = 'note',
+  RECONNECT = 'onReconnect',
 }
 
 export enum MessageType {
@@ -14,4 +15,5 @@ export enum MessageType {
   USER_LEFT = 'user_left',
   REJECT_USERNAME = 'reject_username',
   NOTE = 'note',
+  RECONNECT = 'reconnect',
 }

@@ -107,11 +107,10 @@ export class Caller extends EventEmitter {
         if (document.location.protocol === "https:") {
           scheme += "s";
         } else {
-          
           port += ':6503'
         }
         
-        serverUrl = "wss://heym8-router-3ae6aec9f735.herokuapp.com/ws";
+        serverUrl = process.env.ROUTER_URI || "wss://heym8-router-3ae6aec9f735.herokuapp.com/ws";
         // serverUrl = scheme + "://" + this.myHostname + port + "/ws";
         // 
       
@@ -173,12 +172,18 @@ export class Caller extends EventEmitter {
             case "message":
               text = JSON.stringify({ type: MessageType.USER_MESSAGE, time: timeStr, name: msg.name, text: msg.text })
               break;
-  
+
             case "note":
               // text = JSON.stringify({ type: MessageType.NOTE, time: timeStr, name: msg.name, text: msg.text })
               this.emit(StoreEvent.NOTE, JSON.parse(msg.text))
               break;
-    
+
+            case "reconnect":
+              // text = JSON.stringify({ type: MessageType.NOTE, time: timeStr, name: msg.name, text: msg.text })
+              console.log('onReconnect', msg)
+              this.emit(StoreEvent.RECONNECT, msg.text)
+              break;
+  
             case "rejectusername":
               this.myUsername = msg.name;
               text = JSON.stringify({ type: MessageType.REJECT_USERNAME, time: timeStr, name: msg.name})
@@ -220,6 +225,17 @@ export class Caller extends EventEmitter {
         var msg = {
           text: JSON.stringify({ note, octave }),
           type: "note",
+          id: this.clientID,
+          date: Date.now()
+        };
+        this.sendToServer(msg);
+      }
+
+      public sendReconnect(user) {
+        var msg = {
+          type: "reconnect",
+          text: this.myUsername,
+          target: user,
           id: this.clientID,
           date: Date.now()
         };
@@ -630,9 +646,12 @@ export class Caller extends EventEmitter {
         switch(this.peers[user].iceConnectionState) {
           case "closed":
           case "failed":
+            break;
+        
           case "disconnected":
             this.closeVideoCall(user);
-            break;
+
+            this.sendReconnect(user)
         }
       }
       
@@ -699,7 +718,7 @@ export class Caller extends EventEmitter {
       // when the user hangs up, the other user hangs up, or if a connection
       // failure is detected.
       
-      private closeVideoCall(user) {
+      public closeVideoCall(user) {
         // var localVideo = document.getElementById("local_video");
       
         this.log("Closing the call");
@@ -818,6 +837,41 @@ export class Caller extends EventEmitter {
             this.handleGetUserMediaError(user, err);
           }
         }
+      }
+
+
+      
+      public async reinvite(user) {
+        if (user === this.myUsername) {
+          alert("I'm afraid I can't let you talk to yourself. That would be weird.");
+          return;
+        }
+        this.log("Starting to reinvite user");
+
+
+          this.peers[user] = await this.createPeerConnection(user);
+      
+          // Get access to the webcam stream and attach it to the
+          // "preview" box (id "local_video").
+      
+          try {
+            this.webcamStream = await navigator.mediaDevices.getUserMedia(this.mediaConstraints);
+            this.emit(StoreEvent.LOCAL_STREAM, this.webcamStream)
+          } catch(err) {
+            this.handleGetUserMediaError(user, err);
+            return;
+          }
+      
+          // Add the tracks from the stream to the RTCPeerConnection
+      
+          try {
+            this.webcamStream.getTracks().forEach(
+              track => this.peers[user].addTransceiver(track, {streams: [this.webcamStream]})
+            );
+          } catch(err) {
+            this.handleGetUserMediaError(user, err);
+          }
+      
       }
       
       // Accept an offer to video chat. We configure our local settings,
