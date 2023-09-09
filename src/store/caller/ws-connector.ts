@@ -1,8 +1,9 @@
 import { EventEmitter } from "events";
-import { io } from "socket.io-client";
+import { Socket, io } from "socket.io-client";
+import { IoEventType } from "./types";
 
 export class WsConnector extends EventEmitter {
-  private connection = null;
+  private io: Socket
 
   constructor({
       onOpen,
@@ -21,40 +22,32 @@ export class WsConnector extends EventEmitter {
       port += ':6503'
     }
     
-    
-    serverUrl = "ws://localhost:5001/ws";
+    serverUrl = "http://localhost:5001";
     // serverUrl = process.env.ROUTER_URI || "wss://heym8-router-3ae6aec9f735.herokuapp.com/ws";
     // serverUrl = scheme + "://" + this.myHostname + port + "/ws";
-    // 
-
-
-
-    
   
-    console.log(`Connecting to server: ${serverUrl}`);
-    this.connection = new WebSocket(serverUrl, "json");
-  
-    this.connection.onopen = onOpen
-  
-    this.connection.onerror = (evt) => {
-      console.dir(evt);
-    }
-  
-    this.connection.onmessage = (evt) => {
 
-      // var chatBox = document.querySelector(".chatbox");
-      var {type, ...msg} = JSON.parse(evt.data);
-      console.log(`Message [${type}] received: `);
-      console.dir(msg);
+    this.io = io(`${serverUrl}/admin`, {
+      reconnectionDelayMax: 10000,
+      auth: {
+        token: "123"
+      },
+      query: {
+        "my-key": "my-value"
+      }
+    });
 
-      var time = new Date(msg.date);
+    this.io.on("connect", () => {
+      console.log(this.io.id); // x8WIv7-mJelg7on_ALbx
+      onOpen()
+    });
 
-      this.emit(type, { ...msg, time})
-    }
+    this.io.on("disconnect", (evt) => console.dir(this.io, evt));
+  
+    Object.values(IoEventType).forEach((eventType) => this.io.on(eventType, (msg) => this.emit(eventType, msg)))
   }
 
-  send(msg) {
-      var msgJSON = JSON.stringify(msg);
-      this.connection.send(msgJSON);
+  send({type, ...msg}) {
+    this.io.emit(type, msg);
   }
 }
