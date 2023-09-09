@@ -1,7 +1,8 @@
 import {EventEmitter} from 'events';
-import { MessageType, StoreEvent } from './enums';
+import { MessageType, StoreEvent } from '../enums';
+import { ICaller } from './types';
 
-export class Caller extends EventEmitter {
+export class Caller extends EventEmitter implements ICaller {
     private connection = null;
     private clientID = 0;
     private myHostname: string;
@@ -110,9 +111,13 @@ export class Caller extends EventEmitter {
           port += ':6503'
         }
         
-        serverUrl = process.env.ROUTER_URI || "wss://heym8-router-3ae6aec9f735.herokuapp.com/ws";
+        serverUrl =  "wss://heym8-router-3ae6aec9f735.herokuapp.com/ws";
         // serverUrl = scheme + "://" + this.myHostname + port + "/ws";
         // 
+
+
+
+        
       
         this.log(`Connecting to server: ${serverUrl}`);
         this.connection = new WebSocket(serverUrl, "json");
@@ -710,6 +715,8 @@ export class Caller extends EventEmitter {
       
       //     listElem.appendChild(item);
       //   });
+
+      console.log("MSG", msg)
         this.emit(StoreEvent.USER_LIST, msg.users)
       }
       

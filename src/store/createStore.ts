@@ -121,6 +121,8 @@ export function createStore() {
     // store.ongoingCall = false;
   })
   caller.on(StoreEvent.CONN_OPEN, () => {
+
+    console.log("CONNECTION OPEN")
     store.textingReady = true;
     setTimeout(checkRoom, 5000)
   })
