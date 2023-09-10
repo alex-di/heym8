@@ -54,13 +54,9 @@ export class Caller extends EventEmitter implements ICaller {
       onOpen: (evt) => {
         // document.getElementById("text").disabled = false;
         // document.getElementById("send").disabled = false;
-        this.emit(StoreEvent.CONN_OPEN, evt)
+        this.emit(StoreEvent.CONN_OPEN)
+        this.setUsername(evt);
       }
-    })
-
-    this.connector.on("id", (msg) => {
-      this.clientID = msg.id;
-      this.setUsername(this.username);
     })
 
     

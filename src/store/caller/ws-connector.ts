@@ -39,7 +39,7 @@ export class WsConnector extends EventEmitter {
 
     this.io.on("connect", () => {
       console.log(this.io.id); // x8WIv7-mJelg7on_ALbx
-      onOpen()
+      onOpen(this.io.id)
     });
 
     this.io.on("disconnect", (evt) => console.dir(this.io, evt));
