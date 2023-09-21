@@ -1,12 +1,16 @@
 import { observable } from 'mobx';
-import { Caller } from './caller';
-import { MessageType, StoreEvent } from './enums';
-import { createKeyboard } from './keyboard';
+import { Caller } from '../caller';
+import { MessageType, StoreEvent } from '../enums';
+import { createKeyboard } from '../keyboard';
+import { connectWallet, signInWithEthereum } from '../chain';
 
 export type TStore = ReturnType<typeof createStore>
 
 export enum LocalStoreKey {
-  USERNAME = 'username'
+  USERNAME = 'username',
+  ADDRESS = 'address',
+  SIGNED_MESSAGE = 'signed_message',
+  SIGNATURE = 'signature',
 }
 
 export function createStore() {
@@ -40,7 +44,7 @@ export function createStore() {
     const streams = Object.keys(store.remoteStreams)
 
     const stream = store.remoteStreams[streams[0]]
-    console.log('users', store.users, streams, stream, store.users.length < streams.length)
+    console.log('users', store.isUsersFull, store.users.toJSON())
 
     // if (store.users.length < streams.length) {
     //   const user = store.users.find((user) => user !== store.username);
@@ -57,11 +61,13 @@ export function createStore() {
     setTimeout(checkRoom, nextCheck) 
   }
 
+  connectWallet()
   const store = observable({
     caller,
     username,
     roomId: location.hash,
-
+    signature: null,
+    address: null,
     isDefaultUsername,
     messages: observable.array([]),
     users: observable.array([]),
@@ -70,8 +76,41 @@ export function createStore() {
     ongoingCall: false,
     textingReady: false,
     isUsersFull: false,
+    callActive: false,
     muted: false,
     music: false,
+    walletConnected: false,
+    signedMessage: null,
+    enableCall() {
+      this.callActive = true
+      this.updateUserlist(this.users)
+    },
+    async signIn() {
+      console.log({ store: this })
+      
+      const signature = localStorage.getItem(LocalStoreKey.SIGNATURE)
+      const address = localStorage.getItem(LocalStoreKey.ADDRESS)
+      const rawMessage = localStorage.getItem(LocalStoreKey.SIGNED_MESSAGE)
+      const message = rawMessage && JSON.parse(rawMessage)
+      if (signature && address && message) {
+        this.setSignature({ signature, address, message })
+        return 
+      }
+      const data = await signInWithEthereum();
+      this.setSignature(data)
+      this.setUsername(data.address)
+    },
+
+    setSignature({signature, address, message}) {
+      
+      this.signature = signature
+      this.address = address
+      this.signedMessage = message
+      localStorage.setItem(LocalStoreKey.SIGNATURE, signature)
+      localStorage.setItem(LocalStoreKey.ADDRESS, address)
+      localStorage.setItem(LocalStoreKey.SIGNED_MESSAGE, JSON.stringify(message))
+      console.log("Signed in", { signature, address, message, store: this })
+    },
     enableKeyboard() {
       keyboard.enable()
     },
@@ -100,10 +139,8 @@ export function createStore() {
       this.isDefaultUsername = false;
     },
     callUser(user) {
-      // console.log("CALL USER", user)
       setTimeout(() => {
         this.caller.invite(user);
-
       }, 100)
     },
     setMute(value = true) {
@@ -112,7 +149,41 @@ export function createStore() {
     },
     setMusic(value = true) {
       this.music = value;
-      // value ? this.caller.muteLocalStream() : this.caller.unmuteLocalStream()
+    },
+    updateUserlist(newList) {
+
+      const toRemove = [];
+      
+      this.users.forEach((user) => {
+        if (!~newList.indexOf(user)) {
+          toRemove.push(user)
+        } 
+      })
+
+      toRemove.forEach(user => {
+        this.users.splice(this.users.indexOf(user), 1)
+        this.systemMessage({type: MessageType.USER_LEFT, name: user})
+        this.caller.closeVideoCall(user)
+      })
+      
+      newList.forEach(user => {
+        if (user !== this.username && !~this.users.indexOf(user)) {
+          this.users.push(user)
+          this.systemMessage({type: MessageType.USER_JOINED, name: user})
+        }
+      })
+
+      if (this.callActive && !this.isUsersFull) {
+        this.isUsersFull = true;
+        this.users.forEach((user) => {
+          if (user !== this.username) {
+            setTimeout(() => {
+              this.callUser(user);
+            }, 500)
+          }
+        })
+      }
+
     }
   });
 
@@ -160,38 +231,7 @@ export function createStore() {
   })
 
   caller.on(StoreEvent.USER_LIST, newList => {
-    const toRemove = [];
-    
-    store.users.forEach((user) => {
-      if (!~newList.indexOf(user)) {
-        toRemove.push(user)
-      } 
-    })
-
-    toRemove.forEach(user => {
-      store.users.splice(store.users.indexOf(user), 1)
-      store.systemMessage({type: MessageType.USER_LEFT, name: user})
-      store.caller.closeVideoCall(user)
-    })
-    
-    newList.forEach(user => {
-      if (user !== store.username && !~store.users.indexOf(user)) {
-        store.users.push(user)
-        store.systemMessage({type: MessageType.USER_JOINED, name: user})
-      }
-    })
-
-    if (!store.isUsersFull) {
-      store.isUsersFull = true;
-      store.users.forEach((user) => {
-        if (user !== store.username) {
-
-          setTimeout(() => {
-            store.callUser(user);
-          }, 500)
-        }
-      })
-    }
+    store.updateUserlist(newList)
   })
   return store
 }

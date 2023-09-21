@@ -113,12 +113,6 @@ export class Caller extends EventEmitter implements ICaller {
         
         serverUrl = process.env.ROUTER_URI || "wss://heym8-router-3ae6aec9f735.herokuapp.com/ws";
         // serverUrl = scheme + "://" + this.myHostname + port + "/ws";
-        // 
-
-
-
-        
-      
         this.log(`Connecting to server: ${serverUrl}`);
         this.connection = new WebSocket(serverUrl, "json");
       
