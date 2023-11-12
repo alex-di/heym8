@@ -1,5 +1,5 @@
 import {EventEmitter} from 'events';
-import { MessageType, StoreEvent } from '../enums';
+import { MessageType, CallerEvent } from '../../store/enums';
 import { ICaller } from './types';
 
 export class Caller extends EventEmitter implements ICaller {
@@ -8,6 +8,7 @@ export class Caller extends EventEmitter implements ICaller {
     private myHostname: string;
     private username: string;
     private roomId: string;
+    protected users: string[]
     
     private myUsername = null;
     private peers = {};      // To store username of other peer
@@ -119,7 +120,7 @@ export class Caller extends EventEmitter implements ICaller {
         this.connection.onopen = (evt) => {
           // document.getElementById("text").disabled = false;
           // document.getElementById("send").disabled = false;
-          this.emit(StoreEvent.CONN_OPEN, evt)
+          this.emit(CallerEvent.CONN_OPEN, { type: CallerEvent.CONN_OPEN, data: evt })
         };
       
         this.connection.onerror = (evt) => {
@@ -174,13 +175,13 @@ export class Caller extends EventEmitter implements ICaller {
 
             case "note":
               // text = JSON.stringify({ type: MessageType.NOTE, time: timeStr, name: msg.name, text: msg.text })
-              this.emit(StoreEvent.NOTE, JSON.parse(msg.text))
+              this.emit(CallerEvent.NOTE, {type: CallerEvent.NOTE, data: JSON.parse(msg.text)})
               break;
 
             case "reconnect":
               // text = JSON.stringify({ type: MessageType.NOTE, time: timeStr, name: msg.name, text: msg.text })
               console.log('onReconnect', msg)
-              this.emit(StoreEvent.RECONNECT, msg.text)
+              this.emit(CallerEvent.RECONNECT, { type: CallerEvent.RECONNECT, data: msg.text})
               break;
   
             case "rejectusername":
@@ -201,7 +202,7 @@ export class Caller extends EventEmitter implements ICaller {
           
       
           if (text.length) {
-            this.emit(StoreEvent.MESSAGE, text)
+            this.emit(CallerEvent.MESSAGE, { type: CallerEvent.MESSAGE, data: text})
             // chatBox.innerHTML += text;
             // chatBox.scrollTop = chatBox.scrollHeight - chatBox.clientHeight;
           }
@@ -614,7 +615,7 @@ export class Caller extends EventEmitter implements ICaller {
         this.log("*** Track event");
         // document.getElementById("received_video").srcObject = event.streams[0];
         // document.getElementById("hangup-button").disabled = false;
-        this.emit(StoreEvent.REMOTE_STREAM, {id: user, stream: event.streams[0]})
+        this.emit(CallerEvent.REMOTE_STREAM, {type: CallerEvent.REMOTE_STREAM, data: {id: user, stream: event.streams[0]}})
       }
       
       // Handles |icecandidate| events by forwarding the specified
@@ -710,8 +711,13 @@ export class Caller extends EventEmitter implements ICaller {
       //     listElem.appendChild(item);
       //   });
 
-      console.log("MSG", msg)
-        this.emit(StoreEvent.USER_LIST, msg.users)
+        console.log("MSG", msg)
+        this.emit(CallerEvent.USER_LIST, {
+          type: CallerEvent.USER_LIST,
+          data: msg.users
+        })
+
+        this.users = msg.users
       }
       
       // Close the RTCPeerConnection and reset variables so that the user can
@@ -761,7 +767,10 @@ export class Caller extends EventEmitter implements ICaller {
           this.peers[user].close();
           this.peers[user] = null;
           this.webcamStream = null;
-          this.emit(StoreEvent.CALL_CLOSED, user)
+          this.emit(CallerEvent.CALL_CLOSED, {
+            type: CallerEvent.CALL_CLOSED,
+            data: user,
+          })
         }
       }
       
@@ -806,6 +815,23 @@ export class Caller extends EventEmitter implements ICaller {
       // a |notificationneeded| event, so we'll let our handler for that
       // make the offer.
       
+      public async joinCall(): Promise<void> {
+        if (!this.webcamStream) {
+          await this.enableLocalStream()
+        }
+        this.users.filter((user) => user !== this.username).forEach((user) => {
+          this.invite(user)
+        })
+
+      }
+      private async enableLocalStream(user?: any): Promise<void> {
+        this.webcamStream = await navigator.mediaDevices.getUserMedia(this.mediaConstraints);
+        this.emit(CallerEvent.LOCAL_STREAM, {
+          type: CallerEvent.LOCAL_STREAM,
+          data:  this.webcamStream,
+        })   
+      }
+      
       public async invite(user) {
         this.log("Starting to prepare an invitation");
         if (this.peers[user]) {
@@ -821,8 +847,7 @@ export class Caller extends EventEmitter implements ICaller {
           // "preview" box (id "local_video").
       
           try {
-            this.webcamStream = await navigator.mediaDevices.getUserMedia(this.mediaConstraints);
-            this.emit(StoreEvent.LOCAL_STREAM, this.webcamStream)
+            this.enableLocalStream();
           } catch(err) {
             this.handleGetUserMediaError(user, err);
             return;
@@ -843,35 +868,36 @@ export class Caller extends EventEmitter implements ICaller {
 
       
       public async reinvite(user) {
-        if (user === this.myUsername) {
-          alert("I'm afraid I can't let you talk to yourself. That would be weird.");
-          return;
-        }
-        this.log("Starting to reinvite user");
+        throw new Error('Deprecated')
+        // if (user === this.myUsername) {
+        //   alert("I'm afraid I can't let you talk to yourself. That would be weird.");
+        //   return;
+        // }
+        // this.log("Starting to reinvite user");
 
 
-          this.peers[user] = await this.createPeerConnection(user);
+        //   this.peers[user] = await this.createPeerConnection(user);
       
-          // Get access to the webcam stream and attach it to the
-          // "preview" box (id "local_video").
+        //   // Get access to the webcam stream and attach it to the
+        //   // "preview" box (id "local_video").
       
-          try {
-            this.webcamStream = await navigator.mediaDevices.getUserMedia(this.mediaConstraints);
-            this.emit(StoreEvent.LOCAL_STREAM, this.webcamStream)
-          } catch(err) {
-            this.handleGetUserMediaError(user, err);
-            return;
-          }
+        //   try {
+        //     this.webcamStream = await navigator.mediaDevices.getUserMedia(this.mediaConstraints);
+        //     this.emit(CallerEvent.LOCAL_STREAM, this.webcamStream)
+        //   } catch(err) {
+        //     this.handleGetUserMediaError(user, err);
+        //     return;
+        //   }
       
-          // Add the tracks from the stream to the RTCPeerConnection
+        //   // Add the tracks from the stream to the RTCPeerConnection
       
-          try {
-            this.webcamStream.getTracks().forEach(
-              track => this.peers[user].addTransceiver(track, {streams: [this.webcamStream]})
-            );
-          } catch(err) {
-            this.handleGetUserMediaError(user, err);
-          }
+        //   try {
+        //     this.webcamStream.getTracks().forEach(
+        //       track => this.peers[user].addTransceiver(track, {streams: [this.webcamStream]})
+        //     );
+        //   } catch(err) {
+        //     this.handleGetUserMediaError(user, err);
+        //   }
       
       }
       
@@ -916,25 +942,23 @@ export class Caller extends EventEmitter implements ICaller {
       
         if (!this.webcamStream) {
           try {
-            this.webcamStream = await navigator.mediaDevices.getUserMedia(this.mediaConstraints);
+            await this.enableLocalStream()
           } catch(err) {
             this.handleGetUserMediaError(user, err);
             return;
           }
       
-          this.emit('onLocalStream', this.webcamStream)
-      
-          // Add the camera stream to the RTCPeerConnection
-      
-          try {
-            this.webcamStream.getTracks().forEach(
-              track => this.peers[user].addTransceiver(track, {streams: [this.webcamStream]})
-            );
-          } catch(err) {
-            this.handleGetUserMediaError(user, err);
-          }
         }
-      
+
+        // Add the camera stream to the RTCPeerConnection
+    
+        try {
+          this.webcamStream.getTracks().forEach(
+            track => this.peers[user].addTransceiver(track, {streams: [this.webcamStream]})
+          );
+        } catch(err) {
+          this.handleGetUserMediaError(user, err);
+        }
         this.log("---> Creating and sending answer to caller");
       
         await this.peers[user].setLocalDescription(await this.peers[user].createAnswer());

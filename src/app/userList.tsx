@@ -1,20 +1,25 @@
-import React, { useEffect, useState } from 'react'
-import { observer } from 'mobx-react'
+import React, { useContext, useEffect, useState } from 'react'
 
-import {useStore} from '../store'
+
+import { useActor } from '@xstate/react';
 import { Button } from 'react-bootstrap';
+import { GlobalStateContext } from './context';
+import { CallAction } from '../store';
 
 
-export default observer(() => {
-    const store = useStore();
+export default (() => {
 
-    if (!store.users) {
-        return null
-    }
+    const globalServices = useContext(GlobalStateContext);
+    const [appStore] = useActor(globalServices.appService);
+    const [store, send] = useActor(Object.values(appStore.children)[0]);
 
-    return  store.users.length ? <>
+    const ctx = store.context;
+
+    const participants = Object.values(ctx.participants || {})
+
+    return  participants.length ? <>
         <h4>Users online:</h4>
-        <div>{store.users.map((user) => <div>{user}</div>)}</div>
-        { <Button variant="primary" onClick={() => store.enableCall()}>Join call</Button>}
+        <div>{participants.map((user) => <div key={user.id || user}>{JSON.stringify(user)}</div>)}</div>
+        { <Button variant="primary" onClick={() => send({ type: CallAction.JOIN })}>Join call</Button>}
     </> : <h4>Waiting for folks</h4>
 })

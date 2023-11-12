@@ -20,8 +20,13 @@ async function createSiweMessage(address, statement) {
 }
 
 export async function connectWallet() {
-    return provider.send('eth_requestAccounts', [])
+    const result = await provider.send('eth_requestAccounts', [])
         .catch(() => console.log('user rejected request'));
+
+    if (!result) {
+        throw new Error
+    }
+    return result
 }
 
 export async function signInWithEthereum() {

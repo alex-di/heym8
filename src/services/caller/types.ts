@@ -28,6 +28,7 @@ export interface ICaller {
 
   
   reinvite(user): Promise<void> 
+  joinCall(user?): Promise<void>
 }
 
 

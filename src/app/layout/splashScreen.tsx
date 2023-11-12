@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import Jumbotron from 'react-bootstrap/Jumbotron';
 import Button from 'react-bootstrap/Button';
-import ClipboardText from './clipboardText'
-import { useStore } from '../store';
-import { observer } from 'mobx-react';
-import UserList from './userList';
+import ClipboardText from '../clipboardText'
+import { useActor } from '@xstate/react';
 
-export default observer(() => {
-  const store = useStore()
+import UserList from '../userList';
+import { SignIn } from '../signin';
+import { GlobalStateContext } from '../context';
+
+export const SplashScreen = (() => {
+
+  const globalServices = useContext(GlobalStateContext);
+  const [store] = useActor(globalServices.appService);
+
+  const ctx = store.context;
     return <Jumbotron className="mx-auto mt-5 mb-5 pr-5" style={{ maxWidth: "700px"}}>
         <div className=" d-flex flex-column justify-content-center ">
   <h1>Hey mate!</h1>
@@ -19,16 +25,16 @@ export default observer(() => {
   {/* <p>To connect with your friends just share this link and wait for them to enjoy private chatting limited only by your connection capabilities.</p>
     <ClipboardText></ClipboardText> */}
     
-    {store.address 
+    {ctx.address 
     ? 
      <>
-      <p>Signed in with address {store.address}</p>
+      <p>Signed in with address {ctx.address}</p>
       <UserList></UserList>
      </>
     : 
      <>
-      <p>Sign in using MetaMask to start chatting {store.address} {store.signature}</p>
-      <Button variant="primary" onClick={() => store.signIn()}>Sign In</Button>
+      <p>Sign in using MetaMask to start chatting {ctx.address} {ctx.signature}</p>
+      <SignIn></SignIn>
      </>}
     <p></p>
   <p>
