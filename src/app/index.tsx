@@ -1,40 +1,23 @@
-import React from 'react'
+import React, { } from 'react';
 import Container from 'react-bootstrap/Container';
-import Col from 'react-bootstrap/Col';
-import Row from 'react-bootstrap/Row';
+import { useInterpret } from '@xstate/react';
 
-import RemoteDashboard from './remoteDashboard'
-import LocalStream from './localStream';
-import Chat from './chat';
-import { StoreProvider } from '../store';
-import {StarrySky} from './skyBackground';
-import Keyboard from './keyboard';
+import {StarrySky} from './layout';
+
+
+import { GlobalStateContext } from './context';
+import { chainMachine } from '../store';
+import { StateContainer } from './state-container';
 
 const App = () => {
+
+    const appService = useInterpret(chainMachine)
     return <Container fluid>
         <StarrySky>
-        <StoreProvider >
-            <Keyboard />
-            <div className="d-flex flex-column">
-                <Row className="flex-fill">
-                    <Col className="p-0">
-                        <RemoteDashboard></RemoteDashboard>
-                    </Col>
-                </Row>
-                <div  className="bottomPanel d-flex">
-
-                <div className="p-2 flex-grow-1">
-
-                <Chat></Chat>
-                </div>
-                    <div className="lsWrapper flex-grow-0">
-
-                        <LocalStream></LocalStream>
-                    </div>
-                </div>
-
-            </div>
-        </StoreProvider></StarrySky>
+        <GlobalStateContext.Provider value={{ appService }} >
+            <StateContainer></StateContainer>
+        </GlobalStateContext.Provider>
+        </StarrySky>
     </Container>
 } 
 

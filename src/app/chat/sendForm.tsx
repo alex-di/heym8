@@ -1,19 +1,27 @@
-import { observer } from 'mobx-react';
-import React, {useState} from 'react'
 
-import {useStore} from '../../store'
+import React, {useContext, useState} from 'react'
+
+import { useActor } from '@xstate/react';
 import Form from 'react-bootstrap/Form';
 import FormControl from 'react-bootstrap/FormControl';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Messages from './messages'
+import { GlobalStateContext } from '../context';
+import { CallEvents } from '../../store';
 
-export default observer(() => {
-    const store = useStore();
+
+export default (() => {
+
+    const globalServices = useContext(GlobalStateContext);
+    const [store, send] = useActor(globalServices.appService);
+
+    const ctx = store.context;
+
     const [message, updateMessage] = useState('');
-    const [showUsernameInput, toggleUNInput] = useState(store.isDefaultUsername);
-    const [username, updateUsername] = useState(store.username);
-    return store.ongoingCall && <div className="sendFormWrapper">
+    const [showUsernameInput, toggleUNInput] = useState(ctx.isDefaultUsername);
+    const [username, updateUsername] = useState(ctx.username);
+    return ctx.ongoingCall && <div className="sendFormWrapper">
                 <div className="messagesWrapper">
                     <Messages></Messages>
                     </div>
@@ -44,7 +52,10 @@ export default observer(() => {
         />}
         <Button size="sm" type="submit" className="mb-2" onClick={e => {
             e.preventDefault();
-            store.sendMessage(username, message);
+            send([ {
+                type: CallEvents.SEND_MESSAGE,
+                data: { username, message }
+            }]);
             updateMessage("");
         }}>
             Send

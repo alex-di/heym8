@@ -1,21 +1,29 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+import React, { useContext } from 'react'
+
 import Mute from 'react-bootstrap-icons/dist/icons/mic-mute.js'
 import MuteOn from 'react-bootstrap-icons/dist/icons/mic-mute-fill.js'
 import Music from 'react-bootstrap-icons/dist/icons/music-note.js'
 import MusicOn from 'react-bootstrap-icons/dist/icons/music-note-list.js'
 
-import {useStore} from '../store'
+import { useActor } from '@xstate/react';
+import { GlobalStateContext } from './context'
+import { CallEvents } from '../store'
 
 
-export default observer(() => {
-    const store = useStore();
+
+export default (() => {
+
+    const globalServices = useContext(GlobalStateContext);
+    const [appStore] = useActor(globalServices.appService);
+    const [store, send] = useActor(Object.values(appStore.children)[0]);
+
+    const ctx = store.context;
     return <>
-        <div className={`settingsButton  ${store.muted ? 'active' : ''}`} onClick={() => store.setMute(!store.muted)}>
-            {store.muted ? <MuteOn></MuteOn> : <Mute></Mute> }
+        <div className={`settingsButton  ${ctx.muted ? 'active' : ''}`} onClick={() => send([{ type: CallEvents.SET_MUTE, enabled: !ctx.muted }]) }>
+            {ctx.muted ? <MuteOn></MuteOn> : <Mute></Mute> }
         </div>
-        <div className={`settingsButton  ${store.music ? 'active' : ''}`} onClick={() => store.setMusic(!store.music)}>
-            {store.music ? <MusicOn></MusicOn> : <Music></Music> }
+        <div className={`settingsButton  ${ctx.music ? 'active' : ''}`} onClick={() => send([{ type: CallEvents.SET_MUSIC, enabled: !ctx.music }]) }>
+            {ctx.music ? <MusicOn></MusicOn> : <Music></Music> }
         </div>
     </>
 })
