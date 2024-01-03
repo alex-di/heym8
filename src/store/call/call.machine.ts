@@ -64,7 +64,7 @@ export const callMachine = createMachine<ICallContext, CallEventsObject, Typesta
             return Promise.reject(new Error('No address provided for call init'))
           }
           console.log({ctx, event})
-          return initCaller(ctx.address)
+          return initCaller(ctx.address, ctx.connection)
         },
         onDone: {
           target: CallState.ACTIVE,

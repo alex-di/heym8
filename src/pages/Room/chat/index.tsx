@@ -1,16 +1,13 @@
 import React, {useState} from 'react'
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
-import Messages from './messages';
+import {Messages} from './messages';
 import SendForm from './sendForm';
 
-export default () => {
+export const Chat = ({  }) => {
     return <div className="d-flex flex-column justify-content-end">         
-        <Row>
-            <Col>
+                <Messages></Messages>
                 <SendForm></SendForm>
-            </Col>
-         </Row>
-         
+
         </div>
 }

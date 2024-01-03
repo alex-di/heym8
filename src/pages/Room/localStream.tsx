@@ -3,8 +3,9 @@ import React, { useContext, useState } from 'react'
 import { useActor } from '@xstate/react';
 import Video from './video'
 import Settings from './settings';
-import { GlobalStateContext } from './context';
-import { CallState, ICallContext } from '../store';
+
+import { CallState, ICallContext } from '../../store';
+import { GlobalStateContext } from '../../components';
 
 
 

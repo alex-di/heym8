@@ -6,13 +6,13 @@ import Music from 'react-bootstrap-icons/dist/icons/music-note.js'
 import MusicOn from 'react-bootstrap-icons/dist/icons/music-note-list.js'
 
 import { useActor } from '@xstate/react';
-import { GlobalStateContext } from './context'
-import { CallEvents } from '../store'
+
+import { CallEvents } from '../../store'
+import { GlobalStateContext } from '../../components'
 
 
 
 export default (() => {
-
     const globalServices = useContext(GlobalStateContext);
     const [appStore] = useActor(globalServices.appService);
     const [store, send] = useActor(Object.values(appStore.children)[0]);

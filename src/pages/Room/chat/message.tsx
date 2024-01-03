@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Toast from 'react-bootstrap/Toast';
-import { MessageType } from '../../store/enums';
+import { MessageType } from '../../../store/enums';
 
 export function renderMessage(raw: string) {
     try {

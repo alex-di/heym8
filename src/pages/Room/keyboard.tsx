@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react'
 
 import { useActor } from '@xstate/react';
-import { GlobalStateContext } from './context';
-import { CallEvents } from '../store';
+
+import { CallEvents } from '../../store';
+import { GlobalStateContext } from '../../components';
 
 
 

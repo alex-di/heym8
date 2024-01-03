@@ -1,4 +1,4 @@
 export * from './call'
-export * from './chain'
+export * from './app.machine'
 export * from './types'
 export * from './enums'

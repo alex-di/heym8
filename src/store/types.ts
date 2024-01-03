@@ -1,19 +1,27 @@
 
 import { EventObject } from "xstate"
-import { CallEvents, CallState, ChainEvent } from "./enums"
+import { CallEvents, CallState, AppEvent } from "./enums"
 import { ICaller } from "../services/caller/types"
+import { IMessage } from "../services/room"
 
-export interface IChainContext {
+export interface IAppContext {
     network: number,
     address?: string,
     error?: unknown,
+    owned: string[],
+    available: string[]
+    connection: WebSocket
     music: boolean,
-    users: IUser[],
-    messages: IMessage[],
 }
 
-export type ChainEventObject = {
-    [key in ChainEvent]: {
+export interface IRoomContext extends IAppContext {
+    users: IUser[],
+    messages: IMessage[],
+    caller: ICaller
+}
+
+export type AppEventObject = {
+    [key in AppEvent]: {
         type: key
     }
 }
@@ -22,13 +30,8 @@ export interface IUser {
     address: string
 }
 
-export interface IMessage {
-    sender: string,
-    text: string,
-    timestamp: string,
-}
+export interface ICallContext extends IAppContext {
 
-export interface ICallContext {
     ongoingCall: boolean
     enabled: boolean
     roomId: string

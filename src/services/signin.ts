@@ -1,23 +1,16 @@
 import { BrowserProvider } from 'ethers';
-import { SiweMessage } from 'siwe';
+// import { hashMessage, recover, sign } from 'web3-eth-accounts';
+// import { SiweMessage } from 'siwe';
 
 const domain = window.location.host;
 const origin = window.location.origin;
 const provider = new BrowserProvider(window.ethereum);
 
-const BACKEND_ADDR = "http://localhost:3000";
-async function createSiweMessage(address, statement) {
-    const message = new SiweMessage({
-        domain,
-        address,
-        statement,
-        uri: origin,
-        version: '1',
-        chainId: 1,
-        // nonce: await res.text()
-    });
-    return message.prepareMessage();
-}
+// expect(hashMessage(message)).toEqual(hash);
+// const result = sign(data, testObj.privateKey);
+// expect(result.signature).toEqual(testObj.signature || testObj.signatureOrV); // makes sure we get signature and not V value
+// const address = recover(data, testObj.signatureOrV, testObj.prefixedOrR, testObj.s);
+// expect(address).toEqual(testObj.address);
 
 export async function connectWallet() {
     const result = await provider.send('eth_requestAccounts', [])
@@ -26,16 +19,20 @@ export async function connectWallet() {
     if (!result) {
         throw new Error
     }
-    return result
+
+    console.log("CONNECT WALLET DONW", result)
+    const roomList = [0]
+    return {
+        address: result, 
+        owned: roomList,
+        available: roomList
+    }
 }
 
 export async function signInWithEthereum() {
     const signer = await provider.getSigner();
 
-    const message = await createSiweMessage(
-        await signer.getAddress(),
-        'Sign in with Ethereum to the app.'
-    );
+    const message = 'Sign in with Ethereum to the app using address: ' + await signer.getAddress()
     const signature = await signer.signMessage(message);
-    return { signature, address: signer.address, message }
+    return { signature, address: signer.address, message, owned: [], available: [] }
 }

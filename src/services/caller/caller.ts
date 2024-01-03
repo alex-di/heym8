@@ -36,7 +36,7 @@ export class Caller extends EventEmitter implements ICaller {
     };
     
   
-      constructor({ username, roomId }) {
+      constructor({ username, roomId , connection }) {
         super();
           // Get our hostname
   
@@ -49,7 +49,7 @@ export class Caller extends EventEmitter implements ICaller {
           this.myHostname = myHostname;
           this.username = username;
           this.log("Hostname: " + myHostname);
-          this.connect();
+          this.connect(connection);
           this.muteLocalStream = this.muteLocalStream.bind(this);
           this.unmuteLocalStream = this.unmuteLocalStream.bind(this);
       }
@@ -98,25 +98,8 @@ export class Caller extends EventEmitter implements ICaller {
       
       // Open and configure the connection to the WebSocket server.
       
-      private connect() {
-        var serverUrl;
-        var scheme = "ws";
-      
-        // If this is an HTTPS connection, we have to use a secure WebSocket
-        // connection too, so add another "s" to the scheme.
-      
-        var port = '';
-        if (document.location.protocol === "https:") {
-          scheme += "s";
-        } else {
-          port += ':6503'
-        }
-        
-        serverUrl = process.env.ROUTER_URI || "wss://heym8-router-3ae6aec9f735.herokuapp.com/ws";
-        // serverUrl = scheme + "://" + this.myHostname + port + "/ws";
-        this.log(`Connecting to server: ${serverUrl}`);
-        this.connection = new WebSocket(serverUrl, "json");
-      
+      private connect(connection) {
+        this.connection = connection
         this.connection.onopen = (evt) => {
           // document.getElementById("text").disabled = false;
           // document.getElementById("send").disabled = false;
@@ -128,85 +111,91 @@ export class Caller extends EventEmitter implements ICaller {
         }
       
         this.connection.onmessage = (evt) => {
-          // var chatBox = document.querySelector(".chatbox");
-          var text = "";
-          var msg = JSON.parse(evt.data);
-          this.log("Message received: ");
-          console.dir(msg);
-          var time = new Date(msg.date);
-          var timeStr = time.toLocaleTimeString();
-      
-          switch(msg.type) {
-            case "id":
-              this.clientID = msg.id;
-              this.setUsername(this.username);
-              break;
-            case "userlist":      // Received an updated user list
-              this.handleUserlistMsg(msg);
-              break;
-      
-            // Signaling messages: these messages are used to trade WebRTC
-            // signaling information during negotiations leading up to a video
-            // call.
-      
-            case "video-offer":  // Invitation and offer to chat
-              this.handleVideoOfferMsg(msg);
-              break;
-      
-            case "video-answer":  // Callee has answered our offer
-              this.handleVideoAnswerMsg(msg);
-              break;
-      
-            case "new-ice-candidate": // A new ICE candidate has been received
-              this.handleNewICECandidateMsg(msg);
-              break;
-      
-            case "hang-up": // The other peer has hung up the call
-              this.handleHangUpMsg(msg);
-              break;
-              
-            case "username":
-              text = JSON.stringify({ type: MessageType.USER_JOINED, time: timeStr, name: msg.name})
-              break;
-    
-            case "message":
-              text = JSON.stringify({ type: MessageType.USER_MESSAGE, time: timeStr, name: msg.name, text: msg.text })
-              break;
-
-            case "note":
-              // text = JSON.stringify({ type: MessageType.NOTE, time: timeStr, name: msg.name, text: msg.text })
-              this.emit(CallerEvent.NOTE, {type: CallerEvent.NOTE, data: JSON.parse(msg.text)})
-              break;
-
-            case "reconnect":
-              // text = JSON.stringify({ type: MessageType.NOTE, time: timeStr, name: msg.name, text: msg.text })
-              console.log('onReconnect', msg)
-              this.emit(CallerEvent.RECONNECT, { type: CallerEvent.RECONNECT, data: msg.text})
-              break;
-  
-            case "rejectusername":
-              this.myUsername = msg.name;
-              text = JSON.stringify({ type: MessageType.REJECT_USERNAME, time: timeStr, name: msg.name})
-              break;
-      
-      
-            // Unknown message; output to console for debugging.
-      
-            default:
-              this.log_error("Unknown message received:");
-              this.log_error(msg);
-          }
-      
-          // If there's text to insert into the chat buffer, do so now, then
-          // scroll the chat panel so that the new text is visible.
-          
-      
-          if (text.length) {
-            this.emit(CallerEvent.MESSAGE, { type: CallerEvent.MESSAGE, data: text})
-            // chatBox.innerHTML += text;
-            // chatBox.scrollTop = chatBox.scrollHeight - chatBox.clientHeight;
-          }
+          this.messageHandler(evt)
         };
+      }
+
+
+      private messageHandler(evt) {
+
+        // var chatBox = document.querySelector(".chatbox");
+        var text = "";
+        var msg = JSON.parse(evt.data);
+        this.log("Message received: ");
+        console.dir(msg);
+        var time = new Date(msg.date);
+        var timeStr = time.toLocaleTimeString();
+    
+        switch(msg.type) {
+          case "id":
+            this.clientID = msg.id;
+            this.setUsername(this.username);
+            break;
+          case "userlist":      // Received an updated user list
+            this.handleUserlistMsg(msg);
+            break;
+    
+          // Signaling messages: these messages are used to trade WebRTC
+          // signaling information during negotiations leading up to a video
+          // call.
+    
+          case "video-offer":  // Invitation and offer to chat
+            this.handleVideoOfferMsg(msg);
+            break;
+    
+          case "video-answer":  // Callee has answered our offer
+            this.handleVideoAnswerMsg(msg);
+            break;
+    
+          case "new-ice-candidate": // A new ICE candidate has been received
+            this.handleNewICECandidateMsg(msg);
+            break;
+    
+          case "hang-up": // The other peer has hung up the call
+            this.handleHangUpMsg(msg);
+            break;
+            
+          case "username":
+            text = JSON.stringify({ type: MessageType.USER_JOINED, time: timeStr, name: msg.name})
+            break;
+  
+          case "message":
+            text = JSON.stringify({ type: MessageType.USER_MESSAGE, time: timeStr, name: msg.name, text: msg.text })
+            break;
+
+          case "note":
+            // text = JSON.stringify({ type: MessageType.NOTE, time: timeStr, name: msg.name, text: msg.text })
+            this.emit(CallerEvent.NOTE, {type: CallerEvent.NOTE, data: JSON.parse(msg.text)})
+            break;
+
+          case "reconnect":
+            // text = JSON.stringify({ type: MessageType.NOTE, time: timeStr, name: msg.name, text: msg.text })
+            console.log('onReconnect', msg)
+            this.emit(CallerEvent.RECONNECT, { type: CallerEvent.RECONNECT, data: msg.text})
+            break;
+
+          case "rejectusername":
+            this.myUsername = msg.name;
+            text = JSON.stringify({ type: MessageType.REJECT_USERNAME, time: timeStr, name: msg.name})
+            break;
+    
+    
+          // Unknown message; output to console for debugging.
+    
+          default:
+            this.log_error("Unknown message received:");
+            this.log_error(msg);
+        }
+    
+        // If there's text to insert into the chat buffer, do so now, then
+        // scroll the chat panel so that the new text is visible.
+        
+    
+        if (text.length) {
+          this.emit(CallerEvent.MESSAGE, { type: CallerEvent.MESSAGE, data: text})
+          // chatBox.innerHTML += text;
+          // chatBox.scrollTop = chatBox.scrollHeight - chatBox.clientHeight;
+        }
       }
       
       // Handles a click on the Send button (or pressing return/enter) by

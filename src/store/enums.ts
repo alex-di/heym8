@@ -24,6 +24,7 @@ export enum CallState {
   LOCAL_ONLY = 'LOCAL_ONLY',
   ACTIVE = 'ACTIVE',
   INIT = 'INIT',
+  ONAIR = 'ONAIR',
 }
 
 export enum CallAction {
@@ -52,8 +53,22 @@ export enum CallEvents {
   NEW_MESSAGE = 'new_message',
   USER_LIST = 'user_list',
 }
+export enum RoomEvents {
+  NEW_PARTICIPANT = 'NEW_PARTICIPANT',
+  HANGUP = 'HANGUP',
+  JOIN = 'JOIN'
+}
+export enum RoomAction {
+  CHANGE_ACTIVE_ROOM = 'CHANGE_ACTIVE_ROOM',
+}
+export enum RoomState {
+  INIT = 'INIT',
+  
+  READY = 'READY',
+  ERROR = 'ERROR',
+}
 
-export enum ChainState {
+export enum AppState {
   INIT = 'INIT',
   UNAUTHORIZED = 'UNAUTHORIZED',
   CONNECTING = 'CONNECTING',
@@ -61,7 +76,7 @@ export enum ChainState {
   ONAIR = 'ONAIR',
 }
 
-export enum ChainEvent {
+export enum AppEvent {
   CONNECT_WALLET = 'CONNECT_WALLET',
   JOIN_CALL = 'JOIN_CALL',
 }

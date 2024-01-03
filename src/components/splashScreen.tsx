@@ -1,20 +1,23 @@
 import React, { useContext, useState } from 'react';
-import Jumbotron from 'react-bootstrap/Jumbotron';
+
 import Button from 'react-bootstrap/Button';
-import ClipboardText from '../clipboardText'
+import ClipboardText from '../pages/Room/clipboardText'
 import { useActor } from '@xstate/react';
 
-import UserList from '../userList';
-import { SignIn } from '../signin';
-import { GlobalStateContext } from '../context';
+import { GlobalStateContext, LayoutContext } from './context';
+import { Link } from 'react-router-dom';
+import { SignIn } from './signin';
 
 export const SplashScreen = (() => {
 
   const globalServices = useContext(GlobalStateContext);
   const [store] = useActor(globalServices.appService);
 
+  const { setOpen } = useContext(LayoutContext);
+
+
   const ctx = store.context;
-    return <Jumbotron className="mx-auto mt-5 mb-5 pr-5" style={{ maxWidth: "700px"}}>
+    return <div className="mx-auto mt-5 mb-5 pr-5 bg-white p-5 rounded shadow" style={{ maxWidth: "700px"}}>
         <div className=" d-flex flex-column justify-content-center ">
   <h1>Hey mate!</h1>
   <p></p>
@@ -29,7 +32,9 @@ export const SplashScreen = (() => {
     ? 
      <>
       <p>Signed in with address {ctx.address}</p>
-      <UserList></UserList>
+
+      <Button onClick={( ) => setOpen(true)}>Choose another room</Button>
+      {/* <Button onClick={( ) => setOpen(true)}>Choose another room</Button> */}
      </>
     : 
      <>
@@ -52,5 +57,5 @@ export const SplashScreen = (() => {
   <p><i>P.S: I'd recommend using Chrome for this</i></p>
     </div>
 
-</Jumbotron>
+</div>
 })
