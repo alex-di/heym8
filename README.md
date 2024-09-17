@@ -3,7 +3,7 @@ Pre-dapp video chat project using webrtc
 and simple websocket signaling server
 
 ## Stack
-- FE: react + mobx + WebRTC
+- FE: react + xstate + WebRTC
 - BE: nodejs
 - special thanks to [Parcel](https://parceljs.org/) project makes it build so fast and easy
 
