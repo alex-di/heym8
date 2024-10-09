@@ -4,10 +4,8 @@ import { useActor } from '@xstate/react';
 import Video from './video'
 import Settings from './settings';
 
-import { CallState, ICallContext } from '../../store';
-import { GlobalStateContext } from '../../components';
-
-
+import { CallState, ICallContext } from '../../shared/store';
+import { GlobalStateContext } from '../../shared/ui';
 
 
 export default () => {

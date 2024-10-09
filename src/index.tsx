@@ -5,13 +5,14 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Container from 'react-bootstrap/Container';
 import { useActor, useInterpret } from '@xstate/react';
 
-import { GlobalStateContext, SplashScreen, StarrySky, LayoutContext} from './components';
 
-import { appMachine, AppState } from './store';
+
+import { appMachine, AppState } from './shared/store';
 
 import { HomePage , RoomPage,  } from './pages';
-import { Layout } from './components/layout';
 import { NotFoundPage } from './pages/NotFound';
+import { StarrySky, GlobalStateContext } from './shared/ui';
+import { Layout } from './shared/ui/layout';
 
 let router = createBrowserRouter([
   {

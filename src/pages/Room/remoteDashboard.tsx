@@ -2,10 +2,9 @@
 import React, { useContext } from 'react'
 import { useActor } from '@xstate/react';
 import Video from './video'
-import {SplashScreen, Loader, GlobalStateContext} from '../../components'
 
-import { CallState } from '../../store';
 import { Chat } from './chat';
+import { GlobalStateContext } from '../../shared/ui';
 
 export default (({ messages}) => {
 

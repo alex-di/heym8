@@ -8,16 +8,17 @@ import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 
 
-import { CallEvents, CallState, AppState } from '../../../store';
-import { GlobalStateContext } from '../../../components';
+import {  AppState, RoomEvents, RoomState } from '../../../shared/store';
+import { GlobalStateContext } from '../../../shared/ui';
 
 
 export default (() => {
 
     const globalServices = useContext(GlobalStateContext);
-    const [appStore, send] = useActor(globalServices.appService);
+    const [appStore] = useActor(globalServices.appService);
 
-    const [store] = useActor(Object.values(appStore.children)[0]);
+    const [store, send] = useActor(appStore.children.room);
+    console.log('SEND FROM', appStore.children, store)
     const ctx = store?.context || {};
 
     const [message, updateMessage] = useState('');
@@ -25,9 +26,9 @@ export default (() => {
     const [username, updateUsername] = useState(ctx.username);
 
     const isActive = appStore.value === AppState.READY && [
-        CallState.ACTIVE, 
-        CallState.ONAIR,
+        RoomState.READY,
     ].includes(store.value )
+
 
 
     return !isActive ? <>
@@ -63,7 +64,7 @@ export default (() => {
             e.preventDefault();
             send([ {
                 type: RoomEvents.SEND_MESSAGE,
-                data: { username, message }
+                message,
             }]);
             updateMessage("");
         }}>

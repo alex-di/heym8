@@ -7,11 +7,9 @@ import RemoteDashboard from "./remoteDashboard"
 import { useActor } from '@xstate/react';
 
 import LocalStream from './localStream';
-import { AppState } from '../../store';
-import { GlobalStateContext } from '../../components';
+import { AppState } from '../../shared/store';
 import {Chat} from './chat';
-import { initContractStorage } from '../../services/room';
-import { useLoaderData } from 'react-router-dom';
+import { GlobalStateContext } from '../../shared/ui';
 
 
 export const ActiveState = ({ }) => {

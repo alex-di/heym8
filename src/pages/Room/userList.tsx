@@ -2,21 +2,23 @@ import React, { useContext, useEffect, useState } from 'react'
 
 
 import { useActor } from '@xstate/react';
-import { Button } from 'react-bootstrap';
-
-import { CallAction } from '../../store';
-import { GlobalStateContext } from '../../components';
+import {PersonBadge} from 'react-bootstrap-icons';
+import { GlobalStateContext } from '../../shared/ui';
 
 
 export default (() => {
 
     const globalServices = useContext(GlobalStateContext);
     const [appStore] = useActor(globalServices.appService);
-    const [store, send] = useActor(Object.values(appStore.children)[0]);
+    // @TODO: Fix
+    // const [store, send] = useActor(appStore.children.call);
+    const [store, send] = useActor(appStore.children.room);
     if (!store) {
         return <div>Loading...</div>
     }
 
+
+    console.log('!!!!STORE', store)
     const ctx = store.context;
 
 
@@ -24,6 +26,10 @@ export default (() => {
 
     return  participants.length ? <>
         <h4>Users online:</h4>
-        <div>{participants.map((user) => <div key={user.id || user}>{JSON.stringify(user)}</div>)}</div>
+        <div>{participants.map((user) => <div key={user.id || user}>
+            <PersonBadge></PersonBadge>
+            {" "}
+            {user.id.slice(0,6)}...{user.id.slice(-4)}</div>)}
+            </div>
     </> : <h4>Waiting for folks</h4>
 })

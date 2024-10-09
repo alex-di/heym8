@@ -7,8 +7,8 @@ import MusicOn from 'react-bootstrap-icons/dist/icons/music-note-list.js'
 
 import { useActor } from '@xstate/react';
 
-import { CallEvents } from '../../store'
-import { GlobalStateContext } from '../../components'
+import { CallEvents } from '../../shared/store'
+import { GlobalStateContext } from '../../shared/ui'
 
 
 

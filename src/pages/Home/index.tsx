@@ -1,7 +1,6 @@
 import React = require("react");
+import { SplashScreen } from "../../shared/ui";
 
-import { LayoutContext, SplashScreen } from "../../components";
-import { Outlet } from "react-router-dom";
 
 export function HomePage() {
   console.log('home page')

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 
 import { useActor } from '@xstate/react';
 
-import { CallEvents } from '../../store';
+import { CallEvents } from '../../shared/store';
 import { GlobalStateContext } from '../../components';
 
 

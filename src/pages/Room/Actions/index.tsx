@@ -1,8 +1,8 @@
-import { useActor } from "@xstate/react";
 import React = require("react");
+import { useActor } from "@xstate/react";
 import { Button } from "react-bootstrap"
-import { GlobalStateContext } from "../../../components";
-import { CallAction, CallState } from "../../../store";
+import { CallAction, CallState } from "../../../shared/store";
+import { GlobalStateContext } from "../../../shared/ui";
 
 export const Actions = () => {
 
@@ -11,7 +11,7 @@ export const Actions = () => {
 
 
     const [store, send] = useActor(Object.values(appStore.children)[0]);
-    return store?.value == CallState.ONAIR 
+    return store?.value === CallState.ONAIR 
         ? <Button variant="warning" onClick={() => send({ type: CallAction.HANGUP })}>Hangup</Button>
         :<Button variant="primary" onClick={() => send({ type: CallAction.JOIN })}>Join call</Button>
 }
